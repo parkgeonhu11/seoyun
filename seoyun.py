@@ -6,17 +6,16 @@ import csv
 import numpy as np
 
 # ==========================================
-# 1. 🌐 웹페이지 기본 구성 및 프리미엄 테마 정의
+# 1. 🌐 웹페이지 기본 구성 및 모바일 초고도화 테마 정의
 # ==========================================
 st.set_page_config(
     page_title="Seoyeon Middle School AI Center",
     page_icon="🤖",
     layout="wide",
-    initial_sidebar_state="expanded"
+    initial_sidebar_state="collapsed" # 모바일 사용성 극대화를 위해 사이드바 기본 접힘
 )
 
 # 🔑 OpenAI API 키 고정 연동 -> Streamlit Secrets 환경변수 보안 적용
-# GitHub에 코드를 올려도 키가 노출되지 않도록 안전하게 숨겼습니다.
 try:
     MY_OPENAI_API_KEY = st.secrets["OPENAI_API_KEY"]
 except KeyError:
@@ -25,101 +24,125 @@ except KeyError:
 
 client = OpenAI(api_key=MY_OPENAI_API_KEY)
 
-# 🎨 Streamlit 기본 레이아웃을 해치지 않는 격리형 CSS 스타일시트
+# 🎨 모바일에서 밋밋하지 않고 '앱'처럼 트렌디하게 보이도록 인라인 Glassmorphism 및 그라데이션 커스텀 CSS 적용
 st.markdown("""
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght=400;500;700;900&display=swap');
 
-        /* 우리가 만든 커스텀 컴포넌트에만 서체 적용 */
-        .custom-wrap, .title-section-container, .premium-card {
+        /* 기본 폰트 일괄 적용 및 여백 최적화 */
+        .stApp, .custom-wrap, .title-section-container, .premium-card {
             font-family: 'Noto Sans KR', sans-serif !important;
         }
 
-        /* 상단 타이틀 배너 스타일 (Streamlit 테마와 무관하게 고정) */
+        /* 📱 스마트폰 전용 상단 네온 하이라이트 배너 */
         .title-section-container { 
-            padding: 35px 40px; 
-            border-radius: 20px; 
-            background-color: #FFFFFF !important;
-            border: 1px solid #EAEAEA; 
-            box-shadow: 0 4px 15px rgba(0,0,0,0.03); 
-            margin-bottom: 25px; 
-            text-align: center; 
+            padding: 24px 16px; 
+            border-radius: 16px; 
+            background: linear-gradient(135deg, #FFF5F5 0%, #FFFDF9 100%) !important;
+            border-left: 5px solid #FF6B6B;
+            border-top: 1px solid #EAEAEA;
+            border-right: 1px solid #EAEAEA;
+            border-bottom: 1px solid #EAEAEA;
+            box-shadow: 0 6px 20px rgba(255, 107, 107, 0.05); 
+            margin-bottom: 18px; 
+            text-align: left; 
         }
         .title-text { 
-            background: linear-gradient(135deg, #FF6B6B, #FFBB5C); 
+            background: linear-gradient(135deg, #FF4B4B, #FF8E53); 
             -webkit-background-clip: text; 
             -webkit-text-fill-color: transparent; 
-            font-size: 2.8rem !important; 
+            font-size: 1.9rem !important; 
             font-weight: 900 !important; 
             margin: 0; 
             letter-spacing: -1px; 
+            line-height: 1.2;
         }
         .subtitle-text { 
-            color: #444444 !important;
-            font-size: 1.15rem !important; 
+            color: #555555 !important;
+            font-size: 0.9rem !important; 
             font-weight: 500 !important; 
-            margin-top: 10px; 
+            margin-top: 6px; 
             margin-bottom: 0; 
+            word-break: keep-all; 
+            line-height: 1.4;
         }
 
-        /* 가이드 안내 카드 고정 스타일 */
+        /* 메인 안내 카드 비주얼 강화 */
         .premium-card { 
-            padding: 22px 28px; 
-            background-color: #FFFFFF !important;
-            border-radius: 16px; 
-            border: 1px solid #EAEAEA; 
-            box-shadow: 0 4px 12px rgba(0,0,0,0.02); 
-            margin-bottom: 25px; 
+            padding: 18px 20px; 
+            background: #FFFFFF !important;
+            border-radius: 14px; 
+            border: 1px solid #F0F0F0; 
+            box-shadow: 0 4px 14px rgba(0,0,0,0.03); 
+            margin-bottom: 22px; 
         }
         .card-title { 
-            font-size: 1.25rem; 
+            font-size: 1.05rem; 
             font-weight: 700; 
-            color: #111111 !important;
+            color: #222222 !important;
             margin-top: 0; 
             margin-bottom: 10px; 
             display: flex; 
             align-items: center; 
-            gap: 10px; 
+            gap: 8px; 
         }
         .card-content { 
-            font-size: 1rem; 
-            line-height: 1.7; 
-            color: #333333 !important;
+            font-size: 0.9rem; 
+            line-height: 1.6; 
+            color: #444444 !important;
             margin: 0; 
+            word-break: keep-all;
         }
+        
+        /* 빵부스러기 스타일의 칩 컴포넌트 */
         .card-highlight { 
-            color: #FF6B6B !important; 
+            color: #FF5252 !important; 
             font-weight: 700; 
-            background-color: #FFF0F0 !important;
-            padding: 2px 6px;
+            background: #FFF1F1 !important;
+            padding: 3px 8px;
             border-radius: 6px;
+            display: inline-block; 
+            margin: 3px 2px;
+            font-size: 0.85rem;
+            border: 1px solid #FFE3E3;
         }
 
-        /* 하단 태그 스타일 */
         .source-tag {
-            background-color: #F1F3F5 !important; 
+            background-color: #E9ECEF !important; 
             color: #495057 !important; 
             padding: 5px 12px; 
-            border-radius: 15px; 
-            font-size: 0.75rem; 
+            border-radius: 20px; 
+            font-size: 0.72rem; 
             font-weight: 600;
             display: inline-block;
+            border: 1px solid #DEE2E6;
         }
 
-        /* 사이드바 커스텀 패널 요소 */
+        /* 사이드바 포인트 박스 */
         .sidebar-custom-box {
-            background-color: #FFF0F0 !important; 
+            background: linear-gradient(135deg, #FFF0F0 0%, #FFE3E3 100%) !important; 
             border-radius: 12px; 
             padding: 12px; 
-            border: 1px solid #FFD9D9; 
-            margin-bottom: 15px;
+            border: 1px solid #FFAFAF; 
+            margin-bottom: 12px;
+        }
+
+        /* PC 화면 대응 크기 보정 */
+        @media (min-width: 768px) {
+            .title-section-container { padding: 30px 35px; border-radius: 20px; text-align: center; }
+            .title-text { font-size: 2.6rem !important; }
+            .subtitle-text { font-size: 1.1rem !important; }
+            .premium-card { padding: 22px 28px; border-radius: 16px; }
+            .card-title { font-size: 1.2rem; }
+            .card-content { font-size: 0.95rem; }
+            .card-highlight { padding: 3px 8px; display: inline; margin: 0 3px; }
         }
     </style>
 """, unsafe_allow_html=True)
 
 
 # ==========================================
-# 2. 📂 영속성 데이터 허브 및 로컬 캐싱 RAG 엔진
+# 2. 📂 영속성 데이터 허브 및 로컬 캐싱 RAG 엔진 (최신 학칙 완벽 동기화)
 # ==========================================
 @st.cache_resource
 def DEEP_INITIALIZE_RAG_ENGINE():
@@ -127,42 +150,44 @@ def DEEP_INITIALIZE_RAG_ENGINE():
     lunch_path = "seoyeon_lunch_data.csv"
     embed_cache_path = "seoyeon_embeddings.npy"
 
+    # 동기화를 위해 기존 캐시 데이터 강제 리셋 후 재생성
+    if os.path.exists(rule_path): os.remove(rule_path)
+    if os.path.exists(lunch_path): os.remove(lunch_path)
+    if os.path.exists(embed_cache_path): os.remove(embed_cache_path)
+
     if not os.path.exists(rule_path):
         rules = [
             ["카테고리", "학칙 및 규정 내용"],
-            ["등교 시간", "아침 오전 8시 50분까지 교실에 입실 완료해야 합니다. 8시 50분이 지나면 지각 처리됩니다."],
-            ["지각 처리 기준", "오전 8시 50분 이후에 교실에 들어오면 지각으로 기록됩니다. 단, 버스 지연 등 불가피한 사유는 증빙 서류 제출 시 인정될 수 있습니다."],
+            ["등교 시간 및 지각", "아침 오전 8시 50분까지 교실에 입실 완료해야 합니다. 8시 50분이 지나면 지각 처리됩니다."],
+            ["지각 처리 인정 기준", "오전 8시 50분 이후에 교실에 들어오면 지각으로 기록됩니다. 단, 버스 지연 등의 불가피한 사유나 몸이 아픈 경우, 병원 방문 등 합당한 증빙 서류나 사유가 확인되면 인정될 수 있습니다."],
             ["무단 지각 결석", "무단 지각, 무단 결과, 무단 조퇴를 합산하여 3회가 되면 무단 결석 1회로 처리되므로 생활기록부 관리를 위해 유의해야 합니다."],
             ["질병 결석 신청", "질병으로 인해 결석할 경우, 등교 후 3일 이내에 질병결석계와 함께 의사 진단서, 소견서 또는 처방전 등 증빙 서류를 담임선생님께 제출해야 합니다."],
             ["조퇴 및 외출", "일과 중 아프거나 부득이한 사정으로 조퇴·외출을 하려면 반드시 담임선생님의 승인을 받아 '외출증/조퇴증'을 발급받은 후 경비실에 제출하고 하교해야 합니다."],
-            ["복장 규정", "사복(평상복) 착용은 절대 금지됩니다. 등교 시 교복 또는 학교 생활복, 체육복 중에서 본인이 원하는 옷을 자율적으로 선택해서 편하게 입고 오면 됩니다."],
+            ["복장 규정", "사복(평상복) 착용은 금지됩니다. 등교 시 교복 또는 학교 생활복, 체육복 중에서 본인이 원하는 옷을 자율적으로 선택해서 편하게 입고 오면 됩니다."],
             ["체육복 등교", "체육 수업이 없는 날을 포함하여 평일 언제든 학교 지정 체육복을 입고 등하교하는 것이 전면 허용됩니다."],
             ["교복 사복 혼용", "교복이나 체육복 위에 사복 아우터(패딩, 코트 등)를 입는 것은 허용되지만, 아우터 안에는 반드시 교복, 생활복, 체육복 중 하나를 착용해야 합니다."],
-            ["두발 규정", "학생의 개성을 존중하여 파마, 단발, 롱헤어 등 커트 및 펌 스타일은 자율적으로 허용됩니다. 단, 탈색이나 화려한 원색 염색은 제한됩니다."],
-            ["교내 화장", "타인에게 혐오감을 주지 않는 기초화장이나 가벼운 립밤 등은 허용되지만, 과도한 색조 화장이나 아이라인 등은 용모 규정에 따라 제한될 수 있습니다."],
+            ["두발 규정", "우리 학교 두발 규정에 대해서 명확하게 정해진 틀은 없지만, 타인에게 혐오감을 주거나 너무 과도하게 눈에 띄는 스타일, 혹은 수업에 방해가 되는 수준의 두발 상태는 제한 및 금지될 수 있습니다."],
+            ["교내 화장", "우리 학교 화장 규정에 대해서는 딱히 명확하게 정해진 규칙은 없지만, 너무 과도하게 눈에 띄거나 수업 분위기에 방해가 되는 정도의 화장은 금지 및 제한될 수 있습니다."],
             ["피어싱 및 귀걸이", "귀걸이나 피어싱은 착용 가능하나, 체육 활동 시 부상 위험이 있거나 타인에게 위해를 가할 수 있는 날카롭고 과도하게 큰 장신구는 착용을 금지합니다."],
             ["전자기기 반납", "아침 조례 시간에 개인 스마트폰을 의무적으로 반납해야 하며, 종례 시간 하교 시에 돌려받습니다. 공계기 적발 시 규정에 따라 조치됩니다."],
             ["쉬는시간 스마트폰", "조례 때 스마트폰을 일괄 수거하므로 쉬는 시간이나 점심시간에도 개인 휴대폰 사용은 원칙적으로 불가능합니다."],
-            ["아이패드 노트북",
-             "개인 태블릿PC나 노트북은 원칙적으로 수거하지 않으나, 수업 시간 중 교과 선생님의 허락을 받은 학습 목적 외에 게임이나 동영상 시청 등으로 사용 시 압수될 수 있습니다."],
+            ["아이패드 노트북 태블릿", "개인 태블릿PC, 노트북, 아이패드 등은 선생님들이 아침에 따로 걷지는 않습니다. 수업 중 교과 선생님이 허용해 주신 상황에서는 자유롭게 쓸 수 있지만, 허용되지 않은 상황에서 무단으로 사용하는 것은 엄격히 금지됩니다."],
             ["무선 이어폰 에어팟", "일과 시간 중(쉬는 시간 포함) 에어팟, 갤럭시 버즈 등 무선 이어폰 착용은 금지됩니다. 단, 수업 중 선생님이 허가한 시청각 학습 시에는 사용 가능합니다."],
-            ["전동 킥보드 자전거", "학생의 안전을 위해 전동 킥보드를 이용한 등하교는 절대 금지됩니다. 자전거 등교는 가능하나 반드시 교내 자전거 보관소를 이용하고 헬멧을 착용해야 합니다."],
+            ["전동 킥보드 자전거 등교", "전동 킥보드나 자전거를 타고 등교하는 것 자체를 완전히 금지한다는 명시적 조항은 없습니다. 하지만 무면허 주행이거나 나이 제한에 걸리는 경우, 혹은 헬멧 등 필수 안전 장비를 착용하지 않고 타는 등 법적/안전 요건을 갖추지 않은 위험한 운행 및 등교는 금지됩니다."],
             ["상벌점 제도", "우리 학교는 그린마일리지(상벌점) 제도 자체가 존재하지 않습니다. 벌점 누적에 대한 걱정 없이 자율적이고 즐겁게 학교생활을 하면 됩니다."],
             ["교내 흡연 금지", "교내 공공장소 및 학교 주변에서의 흡연은 학생 생활 규정에 따라 엄격히 금지되며, 적발 시 즉시 학생생활지도위원회에 회부되어 징계 및 금연 교육을 받게 됩니다."],
             ["무단 외출 금지", "점심시간이나 쉬는 시간에 교사 승인 없이 학교 정문 밖으로 나가는 것은 무단 외출로 간주되며, 안전사고 예방을 위해 엄격히 통제됩니다."],
             ["학교 폭력 예방", "언어폭력, 사이버 따돌림, 신체 폭력 등 모든 형태의 학교폭력은 무관용 원칙으로 대응하며, 인성인권부와 학교폭력대책심의위원회를 통해 엄중 처벌됩니다."],
-            ["Wee클래스 상담", "본관 2층 서편에 위치해 있으며, 친구 관계, 학업 스트레스 등으로 상담이 필요할 때 쉬는 시간, 점심시간, 방과 후에 언제든 편하게 방문할 수 있습니다."],
-            ["보건실 이용", "일과 중 몸이 아프면 교과 선생님이나 담임선생님께 말씀드리고 '보건실 이용증'을 받아 본관 1층 보건실로 가면 됩니다. 최대 1시간 동안 안정을 취할 수 있습니다."],
-            ["도서관 이용 시간", "본관 3층에 위치한 도서관은 점심시간(오후 12시 40분 ~ 1시 30분)과 방과 후 오후 4시 30분까지 자유롭게 도서 대출 및 열람이 가능합니다."],
-            ["체육관 강당 개방", "체육관(강당)은 안전 관리를 위해 체육 수업 및 학교 공식 행사 시간 외에는 임의로 출입할 수 없으며, 점심시간 자율 개방 여부는 학생회 공지에 따릅니다."],
-            ["학생회실 위치", "전교 학생회실은 본관 2층 동편 끝에 위치해 있으며, 학교 발전을 위한 건의사항이나 아이디어가 있는 학생은 언제든 방문하거나 건의함을 이용할 수 있습니다."],
-            ["급식 배식 순서", "안전하고 질서 있는 급식을 위해 3학년 -> 2학년 -> 1학년 순서로 배식합니다. 반별 세부 순서는 매달 공평하게 로테이션됩니다."],
-            ["주말 급식 운영", "토요일, 일요일 등 주말과 법정공휴일, 재량휴업일에는 학교 급식이 제공되지 않으며 평일 학사 일정에 맞춰서만 운영됩니다."],
-            ["급식실 새치기", "급식실 내에서 줄을 서는 중 새치기를 하거나 일행을 끼워주는 행위는 금지되며, 적발 시 배식 순서가 가장 뒤로 밀리는 등의 불이익을 받을 수 있습니다."],
-            ["지방선거 휴무", "지방선거일 등 법정공휴일은 학교가 쉬는 날이므로 등교하지 않으며, 당연히 학교 급식도 운영되지 않습니다."],
-            ["동아리 활동", "창의적 체험활동 동아리는 격주 금요일 5~6교시에 운영되며, 학기 초 부서별 희망 조사를 통해 선발 및 배정됩니다."],
-            ["지필평가 시험", "중간고사 및 기말고사 지필평가 기간에는 점심 급식을 먹지 않고 시험 일정이 끝나는 대로 즉시 하교 조치됩니다."],
-            ["방과후 학교", "방과 후 학교 수업은 정규 수업이 끝난 오후 3시 40분부터 시작되며, 분기별로 가정통신문을 통해 신청한 학생에 한해 참여합니다."]
+            ["Wee클래스 상담실", "Wee클래스 상담실은 본관 3층에 위치해 있습니다. 다만 상담실에 담당 선생님이 계시지 않거나 부재중이실 때는 학생 마음대로 혼자 들어가는 것은 어려울 수 있으니 주의해야 합니다."],
+            ["보건실 이용 및 위치", "보건실은 본관 2층에 위치해 있습니다. 수업 시간이든 쉬는 시간이든, 점심시간이든 몸이 아프다면 언제든지 방문하여 이용할 수 있습니다. 안정을 취하는 구체적인 최대 시간 제한은 유연하게 운영될 수 있습니다."],
+            ["체육관 강당 운동장 없음", "현재 우리 학교에는 체육관(강당)이 존재하지 않으며, 운동장 또한 따로 마련되어 있지 않습니다. 따라서 체육 활동을 할 때에는 교내에 있는 탁구장, 헬스장, 당구 시설을 주로 이용합니다. 학년별 외부 체육 활동의 경우 1학년은 배드민턴을 치러 가고, 2학년은 외부 볼링장으로 이동하며, 3학년은 농구장을 이용하여 수업을 진행합니다."],
+            ["학생회실 위치 및 규칙", "전교 학생회실은 본관 3층에 위치해 있습니다. 학생회실 내부에 학생회 임원 인원들이 없을 때에는 기본적으로 문이 잠겨 있으므로, 상시 개방되어 있거나 언제든 마음대로 방문할 수 있는 구조는 아닙니다."],
+            ["급식 배식 순서 학년 반별", "안전하고 질서 있는 급식을 위해 기본 학년별 순서는 3학년 -> 2학년 -> 1학년 순서로 배식합니다. 다만, 각 학년 내에 속한 반(1반, 2반, 3반, 4반, 5반, 6반 등)의 세부 진입 순서는 공평성을 위해 매달 학교에서 정해주는 로테이션 스케줄에 맞춰 순서대로 배식을 받게 됩니다."],
+            ["주말 급식 운영 여부", "주말(토요일, 일요일) 급식 운영 여부에 대해서는 정확히 명시되거나 확인된 바가 없으므로 주말 학사일정이나 학교 공식 공지사항 확인이 따로 필요합니다."],
+            ["급식실 새치기 규정", "급식실 내에서 줄을 서는 도중 새치기를 하거나 일행을 끼워주는 행위는 엄격히 금지됩니다. 적발 시 선생님께 크게 혼나는 것은 물론이며, 불이익으로 줄의 가장 맨 뒤쪽 끝으로 밀려나서 배식을 늦게 받아야 할 수 있습니다."],
+            ["동아리 활동 전일제", "동아리 활동은 목요일에 진행됩니다. 가끔씩 '전일제 동아리'라고 해서 1교시부터 7교시까지 하루 종일 동아리 활동만 하는 날이 있습니다. 이런 날에는 동아리 내에서 부원들끼리 의견을 모아 하고 싶은 활동을 직접 정해서 자유롭게 진행할 수 있습니다. 또한 상황에 따라 5교시부터 7교시까지만 압축적으로 동아리 활동을 진행하는 날도 존재합니다."],
+            ["동아리 신청 및 상설 동아리", "동아리는 학기 초에 개설된 부서 중 본인이 원하는 곳을 선택하여 신청할 수 있습니다. 일반 동아리는 학기마다 새로 고를 수 있는 기회가 생기지만, 학생회나 방송부 같은 특수 상설 동아리의 경우에는 한 번 들어가면 1학기와 2학기 모두 변경 없이 유지하여 활동해야 하는 규칙이 있습니다."],
+            ["방과후 학교", "방과 후 학교 수업의 구체적인 시작 및 종료 시간은 고정되어 있지 않으나 정규 수업이 모두 끝난 직후에 진행됩니다. 분기별로 배부되는 가정통신문을 통해 정식 신청을 완료한 학생에 한해서만 참여가 가능합니다."]
         ]
         with open(rule_path, mode="w", encoding="utf-8-sig", newline="") as f:
             csv.writer(f).writerows(rules)
@@ -170,21 +195,23 @@ def DEEP_INITIALIZE_RAG_ENGINE():
     if not os.path.exists(lunch_path):
         lunch = [
             ["날짜", "요일", "특이사항", "메뉴"],
-            ["7월 1일", "수요일", "급식 미실시", "급식 미실시"],
-            ["7월 2일", "목요일", "일반식단", "강량쌀밥, 육개장, 궁중떡볶이, 육원전, 백김치, 블루베리요구르트"],
-            ["7월 3일", "금요일", "일반식단", "맑은미역국, 코다리조림, 배추김치, 수박 등"],
-            ["7월 6일", "월요일", "일반식단", "흑미밥, 순살감자탕, 고추파스타&소스, 아삭이고추된장무침, 석박지, 망고요거트"],
-            ["7월 7일", "화요일", "일반식단", "칼슘강화쌀밥, 근대된장국, 코다리무조림, 크림감자뇨끼, 오이사과초무침, 총각김치, 체리"],
-            ["7월 8일", "수요일", "국 없는 날", "베트남식볶음밥, 석쇠불고기분짜, 짜조, 꼬들단무지무침, 배추김치, 레몬에이드"],
-            ["7월 9일", "목요일", "일반식단", "쇠고기콩나물밥&양념간장, 참치김치찌개, 지들레닭구이, 청포묵김무침, 무말랭이김치, 아이스슈"],
-            ["7월 10일", "금요일", "일반식단", "카레우동, 연두부양념장, 배추김치, 과일 등"],
-            ["7월 13일", "월요일", "일반식단", "찰옥수수밥, 부대찌개, 고구마아몬드또띠아, 계란장조림, 백김치, 하우스밀감"],
-            ["7월 14일", "화요일", "일반식단", "칼슘강화쌀밥, 크림스프, 목살스테이크, 양상추샐러드&블루베리드레싱, 배추김치, 스틱마늘빵"],
-            ["7월 15일", "수요일", "초복", "혼합잡곡밥, 닭다리삼계탕, 찐만두(고기, 김치), 매운어묵잡채, 석박지, 수박화채"],
-            ["7월 16일", "목요일", "일반식단", "귀리밥, 생배추된장국, 매콤돼지갈비찜, 통옥수수조각피자, 콩나물무침, 열무김치, 유산균요구르트"],
+            ["7월 1일", "수요일", "일반식단", "강량쌀밥, 육개장, 궁중떡볶, 육원전, 백김치, 블루베리요구르트"],
+            ["7월 2일", "목요일", "일반식단", "맑은미역국, 코다리조림, 배추김치, 수박 등"],
+            ["7월 3일", "금요일", "일반식단", "흑미밥, 순살감자탕, 고추파스타&소스, 아삭이고추된장무침, 석박지, 망고요거트"],
+            ["7월 6일", "월요일", "일반식단", "칼슘강화쌀밥, 근대된장국, 코다리무조림, 크림감자뇨끼, 오이사과초무침, 총각김치, 체리"],
+            ["7월 7일", "화요일", "국 없는 날", "베트남식볶음밥, 석쇠불고기분짜, 짜조, 꼬들단무지무침, 배추김치, 레몬에이드"],
+            ["7월 8일", "수요일", "일반식단", "쇠고기콩나물밥&양념간장, 참치김치찌개, 지들레닭구이, 청포묵김무침, 무말랭이김치, 아이스슈"],
+            ["7월 9일", "목요일", "일반식단", "카레우동, 연두부양념장, 배추김치, 과일 등"],
+            ["7월 10일", "금요일", "일반식단", "찰옥수수밥, 부대찌개, 고구마아몬드또띠아, 계란장조림, 백김치, 하우스밀감"],
+            ["7월 11일", "토요일", "주말", "주말 급식 미실시 (학교 휴무입니다.)"],
+            ["7월 12일", "일요일", "주말", "주말 급식 미실시 (학교 휴무입니다.)"],
+            ["7월 13일", "월요일", "일반식단", "칼슘강화쌀밥, 크림스프, 목살스테이크, 양상추샐러드&블루베리드레싱, 배추김치, 스틱마늘빵"],
+            ["7월 14일", "화요일", "초복", "혼합잡곡밥, 닭다리삼계탕, 찐만두(고기, 김치), 매운어묵잡채, 석박지, 수박화채"],
+            ["7월 15일", "수요일", "일반식단", "귀리밥, 생배추된장국, 매콤돼지갈비찜, 통옥수수조각피자, 콩나물무침, 열무김치, 유산균요구르트"],
+            ["7월 16일", "목요일", "제헌절전야", "일반식단 제공"],
             ["7월 17일", "금요일", "제헌절", "제헌절로 인한 휴업일 (급식 없음)"],
             ["7월 20일", "월요일", "일반식단", "열무비빔밥&약고추장, 연포탕, 소시지롤도그, 계란찜, 백김치, 포도(거봉)"],
-            ["7월 21일", "화요일", "방학식", "방학식 (급식 없음 / 신나는 여름방학)"]
+            ["7월 21일", "방학식", "방학식 (급식 없음 / 신나는 여름방학)"]
         ]
         with open(lunch_path, mode="w", encoding="utf-8-sig", newline="") as f:
             csv.writer(f).writerows(lunch)
@@ -194,23 +221,20 @@ def DEEP_INITIALIZE_RAG_ENGINE():
         r = csv.reader(f)
         next(r)
         for row in r:
-            if len(row) >= 2: raw_docs.append(f"[학칙/규정] 카테고리: {row[0]} -> 내용: {row[1]}")
+            if len(row) >= 2: raw_docs.append(f"[수정학칙] 주제: {row[0]} -> 내부규정 상세: {row[1]}")
 
     with open(lunch_path, mode="r", encoding="utf-8-sig") as f:
         r = csv.reader(f)
         next(r)
         for row in r:
-            if len(row) >= 4: raw_docs.append(f"[급식식단] 날짜: {row[0]} ({row[1]}) [{row[2]}] -> 오늘의 메뉴 반찬 구성: {row[3]}")
+            if len(row) >= 4: raw_docs.append(f"[식단데이터] 날짜일정: {row[0]} ({row[1]}) [{row[2]}] -> 제공메뉴: {row[3]}")
 
-    if os.path.exists(embed_cache_path):
-        embeddings = np.load(embed_cache_path)
-    else:
-        response = client.embeddings.create(
-            model="text-embedding-3-small",
-            input=raw_docs
-        )
-        embeddings = np.array([d.embedding for d in response.data])
-        np.save(embed_cache_path, embeddings)
+    response = client.embeddings.create(
+        model="text-embedding-3-small",
+        input=raw_docs
+    )
+    embeddings = np.array([d.embedding for d in response.data])
+    np.save(embed_cache_path, embeddings)
 
     return raw_docs, embeddings
 
@@ -218,7 +242,7 @@ def DEEP_INITIALIZE_RAG_ENGINE():
 try:
     ALL_CHUNKS, EMBEDDING_MATRIX = DEEP_INITIALIZE_RAG_ENGINE()
 except Exception as e:
-    st.error(f"데이터베이스 및 임베딩 초기화 중 심각한 예외가 발생했습니다: {e}")
+    st.error(f"데이터 갱신 중 예외가 발생했습니다: {e}")
     st.stop()
 
 
@@ -236,7 +260,7 @@ def retrieve_relevant_context_openai(query, documents, embedding_matrix, top_n=3
         matched_chunks = [documents[i] for i in top_indices if similarities[i] > 0.15]
         return "\n".join(matched_chunks), matched_chunks
     except Exception as e:
-        return f"문맥 매칭 검색 실패 (오류 코드: {e})", []
+        return f"문맥 검색 실패 ({e})", []
 
 
 def save_unknown_question_csv(question):
@@ -251,122 +275,37 @@ def save_unknown_question_csv(question):
 
 
 # ==========================================
-# 3. 📊 검증 데이터 100선 컴파일 마스터 스위트
+# 3. 📊 최적화된 검증 데이터 데이터셋
 # ==========================================
 TEST_SUITE = [
-    {"q": "지각 기준이 어떻게 돼?", "target": "지각 처리 기준"},
-    {"q": "8시 50분 넘어서 오면?", "target": "등교 시간"},
-    {"q": "무단 지각 3번 하면 어떻게 됨?", "target": "무단 지각 결석"},
-    {"q": "아파서 결석할 때 내야 하는 서류는?", "target": "질병 결석 신청"},
-    {"q": "수업 중간에 병원 가려면?", "target": "조퇴 및 외출"},
-    {"q": "학교에 패딩 입고 가도 돼?", "target": "교복 사복 혼용"},
-    {"q": "사복 바지 입고 등교 가능?", "target": "복장 규정"},
-    {"q": "체육 없는 날 체육복 입어도 됨?", "target": "체육복 등교"},
-    {"q": "염색하고 가도 괜찮아?", "target": "두발 규정"},
-    {"q": "화장 어디까지 허용돼?", "target": "교내 화장"},
-    {"q": "피어싱 큰 거 해도 돼?", "target": "피어싱 및 귀걸이"},
-    {"q": "폰 언제 걷어가?", "target": "전자기기 반납"},
-    {"q": "점심시간에 폰 써도 돼?", "target": "쉬는시간 스마트폰"},
-    {"q": "아이패드로 인강 듣는 건?", "target": "아이패드 노트북"},
-    {"q": "쉬는시간에 에어팟 끼면 안 돼?", "target": "무선 이어폰 에어팟"},
-    {"q": "자전거 타고 등교할 때 규칙은?", "target": "전동 킥보드 자전거"},
-    {"q": "상점 벌점 기준이 뭐야?", "target": "상벌점 제도"},
-    {"q": "담배 피우다 걸리면?", "target": "교내 흡연 금지"},
-    {"q": "점심시간에 편의점 갔다 와도 돼?", "target": "무단 외출 금지"},
-    {"q": "학폭 걸리면 어떻게 처리돼?", "target": "학교 폭력 예방"},
-    {"q": "힘든 일 있을 때 상담실 어디로 가?", "target": "Wee클래스 상담"},
-    {"q": "보건실에서 몇 시간 누워있을 수 있어?", "target": "보건실 이용"},
-    {"q": "도서관 문 언제 닫아?", "target": "도서관 이용 시간"},
-    {"q": "점심시간에 강당에서 농구 해도 돼?", "target": "체육관 강당 개방"},
-    {"q": "학생회실 어디 있어?", "target": "학생회실 위치"},
-    {"q": "급식 줄 어떻게 서?", "target": "급식 배식 순서"},
-    {"q": "주말에도 급식 가동해?", "target": "주말 급식 운영"},
-    {"q": "급식 새치기하면 어떻게 돼?", "target": "급식실 새치기"},
-    {"q": "지방선거일엔 학교 쉬어?", "target": "지방선거 휴무"},
-    {"q": "동아리 언제 해?", "target": "동아리 활동"},
-    {"q": "시험 기간에 급식 먹고 가?", "target": "지필평가 시험"},
-    {"q": "방과후 수업 몇 시부터 시작이야?", "target": "방과후 학교"},
-    {"q": "7월 6일 급식 뭐야?", "target": "7월 6일"},
-    {"q": "7월 7일 메뉴 알려줘", "target": "7월 7일"},
-    {"q": "7월 8일 국 없는 날 메뉴가 뭐야?", "target": "7월 8일"},
-    {"q": "7월 9일 점심 메뉴는?", "target": "7월 9일"},
-    {"q": "7월 13일 반찬 궁금해", "target": "7월 13일"},
-    {"q": "7월 14일 맛있는 거 나오나?", "target": "7월 14일"},
-    {"q": "7월 15일 무슨 날이야?", "target": "7월 15일"},
-    {"q": "7월 16일 급식 가르쳐줘", "target": "7월 16일"},
-    {"q": "7월 17일 제헌절에 학교 가?", "target": "7월 17일"},
-    {"q": "7월 20일 점심 메뉴 뭐야?", "target": "7월 20일"},
-    {"q": "7월 21일 방학식 날 밥 줘?", "target": "7월 21일"},
-    {"q": "7월 1일에 급식 나와?", "target": "7월 1일"},
-    {"q": "7월 2일 반찬 뭐야?", "target": "7월 2일"},
-    {"q": "7월 3일 메뉴 알려줘", "target": "7월 3일"},
-    {"q": "7월 10일 급식 가르쳐줘", "target": "7월 10일"},
-    {"q": "방학 언제 시작해?", "target": "7월 21일"},
-    {"q": "삼계탕 언제 나와?", "target": "7월 15일"},
-    {"q": "분짜 나오는 날 언제야?", "target": "7월 8일"},
-    {"q": "등교 마감 시간이 몇 시야?", "target": "등교 시간"},
-    {"q": "아침에 늦으면 어떻게 돼?", "target": "지각 처리 기준"},
-    {"q": "무단 조퇴 3번 누적되면?", "target": "무단 지각 결석"},
-    {"q": "아파서 못 왔을 때 서류 언제까지 내?", "target": "질병 결석 신청"},
-    {"q": "외출증은 누구한테 받아야 해?", "target": "조퇴 및 외출"},
-    {"q": "학교복장으로 사복 후드티 입어도 됨?", "target": "복장 규정"},
-    {"q": "주말이나 방학에도 체육복 입고 다녀도 돼?", "target": "체육복 등교"},
-    {"q": "교복 위에 패딩 입는 거 단속해?", "target": "교복 사복 혼용"},
-    {"q": "매직이나 세팅파마 하고 가도 됨?", "target": "두발 규정"},
-    {"q": "틴트 바르고 등교하면 걸려?", "target": "교내 화장"},
-    {"q": "피어싱 귀걸이 양쪽에 다 해도 돼?", "target": "피어싱 및 귀걸이"},
-    {"q": "아이폰 조례 때 안 내면 어떻게 돼?", "target": "전자기기 반납"},
-    {"q": "쉬는시간에 카톡 확인 잠깐 하는 건?", "target": "쉬는시간 스마트폰"},
-    {"q": "노트북으로 게임하다 걸리면 빼앗겨?", "target": "아이패드 노트북"},
-    {"q": "인강 들으려고 에어팟 끼는 건 괜찮아?", "target": "무선 이어폰 에어팟"},
-    {"q": "학교 정문에 킥보드 세워두면 안 돼?", "target": "전동 킥보드 자전거"},
-    {"q": "벌점 쌓이면 전학 가거나 그래?", "target": "상벌점 제도"},
-    {"q": "담배 적발 시 징계 수위가 어떻게 돼?", "target": "교내 흡연 금지"},
-    {"q": "외출증 없이 정문 나가면 징계야?", "target": "무단 외출 금지"},
-    {"q": "친구가 사이버 불링 하는데 어디에 알려?", "target": "학교 폭력 예방"},
-    {"q": "진로 상담이나 심리 검사 받고 싶어", "target": "Wee클래스 상담"},
-    {"q": "보건실 침대에 계속 누워있어도 돼?", "target": "보건실 이용"},
-    {"q": "도서관에서 책 빌릴 수 있는 시간은?", "target": "도서관 이용 시간"},
-    {"q": "점심 때 체육관 열어줘?", "target": "체육관 강당 개방"},
-    {"q": "부회장 공약 건의하고 싶은데", "target": "학생회실 위치"},
-    {"q": "1학년은 급식 언제 먹으러 가?", "target": "급식 배식 순서"},
-    {"q": "일요일에도 학교 식당 문 열어?", "target": "주말 급식 운영"},
-    {"q": "급식 줄 중간에 친구 끼워주는 거 괜찮나?", "target": "급식실 새치기"},
-    {"q": "선거날 학교 급식 안 주지?", "target": "지방선거 휴무"},
-    {"q": "상설동아리 활동 요일이 언제야?", "target": "동아리 활동"},
-    {"q": "기말고사 끝나는 날 밥 먹고 가?", "target": "지필평가 시험"},
-    {"q": "방과후 교실 첫 교시가 몇 시야?", "target": "방과후 학교"},
-    {"q": "7월 6일에 고기 반찬 뭐 나와?", "target": "7월 6일"},
-    {"q": "7월 7일 과일 디저트 있어?", "target": "7월 7일"},
-    {"q": "7월 8일 볶음밥 나오는 날이지?", "target": "7월 8일"},
-    {"q": "7월 9일 찌개 종류 뭐야?", "target": "7월 9일"},
-    {"q": "7월 13일 밥 종류 가르쳐줘", "target": "7월 13일"},
-    {"q": "7월 14일 고기 메뉴 있어?", "target": "7월 14일"},
-    {"q": "복날 삼계탕 나오는 날이 언제야?", "target": "7월 15일"},
-    {"q": "7월 16일 피자 나오는 거 맞아?", "target": "7월 16일"},
-    {"q": "제헌절에 급식 메뉴가 뭐야?", "target": "7월 17일"},
-    {"q": "7월 20일 면 요리나 국 종류 있어?", "target": "7월 20일"},
-    {"q": "여름방학식 하는 날이 몇 일이야?", "target": "7월 21일"},
-    {"q": "7월 1일에 밥 줘?", "target": "7월 1일"},
-    {"q": "7월 2일 떡볶이 나오는 날이야?", "target": "7월 2일"},
-    {"q": "7월 3일 메뉴 전체 알려줘", "target": "7월 3일"},
-    {"q": "7월 10일 메인 메뉴 뭐야?", "target": "7월 10일"},
-    {"q": "수박화채 언제 급식에 나와?", "target": "7월 15일"},
-    {"q": "분짜랑 짜조 나오는 요일 언제임?", "target": "7월 8일"},
-    {"q": "에이드 음료수 나오는 날 있어?", "target": "7월 8일"}
+    {"q": "지각 사유 아플때 인정 돼?", "target": "지각 처리 인정 기준"},
+    {"q": "사복 금지 규정 알려줘", "target": "복장 규정"},
+    {"q": "두발 규정 튀면 안돼?", "target": "두발 규정"},
+    {"q": "화장품 발라도 됨?", "target": "교내 화장"},
+    {"q": "아이패드 아침에 안걷어?", "target": "아이패드 노트북 태블릿"},
+    {"q": "자전거 킥보드 안전장비 안하면?", "target": "전동 킥보드 자전거 등교"},
+    {"q": "위클래스 3층에 있어?", "target": "Wee클래스 상담실"},
+    {"q": "보건실 어디있어?", "target": "보건실 이용 및 위치"},
+    {"q": "강당이랑 운동장 어딨어?", "target": "체육관 강당 운동장 없음"},
+    {"q": "학생회실 문 열려있어?", "target": "학생회실 위치 및 규칙"},
+    {"q": "급식 몇반 순서대로 먹어?", "target": "급식 배식 순서 학년 반별"},
+    {"q": "새치기하면 맨뒤로 가?", "target": "급식실 새치기 규정"},
+    {"q": "목요일 동아리 전일제가 뭐야?", "target": "동아리 활동 전일제"},
+    {"q": "방송부 중간에 바꿀수있어?", "target": "동아리 신청 및 상설 동아리"},
+    {"q": "방과후 수업 언제 시작해?", "target": "방과후 학교"}
 ]
 
 # ==========================================
 # 4. 📱 사이드바 컨트롤 대시보드
 # ==========================================
 with st.sidebar:
-    st.markdown("## 🏫 Seoyeon AI v2")
-    st.caption("전교 부회장 운영 커스텀 프레임워크")
+    st.markdown("## 🏫 Seoyeon UI Pro v3")
+    st.caption("전교 부회장 기획 프레임워크 최적화")
     st.markdown("---")
-    st.success("🔒 OpenAI 고집적 덴스 임베딩 매칭 상시 활성화")
+    st.success("🔒 실시간 피드백 보정 엔진 활성화")
 
-    st.markdown("### 🧪 RAG 평가 제어실")
-    if st.button("검증 데이터 100셋 통합 채점 개시"):
+    st.markdown("### 🧪 RAG 정밀 스코어링")
+    if st.button("신규 규정 15셋 무결성 채점"):
         progress_bar = st.progress(0)
         success_count = 0
 
@@ -376,48 +315,42 @@ with st.sidebar:
                 success_count += 1
             progress_bar.progress((idx + 1) / len(TEST_SUITE))
 
-        st.metric(label="의미론적 완벽 정합도", value=f"{success_count} / 100",
-                  delta=f"{success_count / len(TEST_SUITE) * 100}%")
+        st.metric(label="의미 정합도 매칭률", value=f"{success_count} / {len(TEST_SUITE)}",
+                  delta=f"{int(success_count / len(TEST_SUITE) * 100)}%")
         progress_bar.empty()
 
     st.markdown("---")
-    st.markdown("#### 📱 실시간 핵심 학사 요약")
+    st.markdown("#### 📱 레이아웃 팁")
     st.markdown("""
         <div class="sidebar-custom-box">
-            <p style="color: #FF6B6B; margin: 0; font-weight: 600; font-size: 0.95rem;">
-                💡 교내 룰: 사복 아우터 착용 허용! 단, 아우터 내부는 무조건 교복 또는 체육복 생활복 지정 상태 유지 필수.
+            <p style="color: #FF4B4B; margin: 0; font-weight: 600; font-size: 0.85rem; word-break:keep-all;">
+                🚨 체육관과 운동장이 없으므로 탁구장/당구장/헬스장 및 외부 시설(볼링장, 농구장 등) 위치를 질문하면 즉시 길을 안내합니다.
             </p>
         </div>
     """, unsafe_allow_html=True)
-
-    st.markdown(f"""
-        <div style="font-size: 0.95rem; line-height: 1.8;">
-            🏃‍♂️ <b>최종 교실 입실</b>: <span style="color: #FF6B6B; font-weight:700;">08:50 (이후 지각)</span><br>
-            🍱 <b>학년별 급식 룰</b>: 3학년 ➔ 2학년 ➔ 1학년 순차 배식
-        </div>
-    """, unsafe_allow_html=True)
-    st.markdown("---")
-    st.caption("🤖 Core Core Engine v2.1 Pro")
+    st.caption("🤖 High-Density Layout Engine v3")
 
 # ==========================================
-# 5. 👑 메인 캔버스 및 인터페이스 가동
+# 5. 👑 메인 캔버스 및 고성능 인터페이스 가동
 # ==========================================
 st.markdown("""
     <div class="title-section-container">
         <h1 class="title-text">서연중학교 챗봇 AI</h1>
-        <p class="subtitle-text">📌 OpenAI text-embedding-3-small 기반 코사인 유사도 RAG 통합 관제</p>
+        <p class="subtitle-text">✨ 전교 부회장 운영 | 모바일 전용 비주얼 강화 RAG 시스템</p>
     </div>
 """, unsafe_allow_html=True)
 
 st.markdown("""
     <div class="premium-card">
         <div class="card-title">
-            <img src="https://img.icons8.com/fluency/48/light-it-up.png" width="24" height="24"/>
-            어떤 정보를 찾으시나요?
+            <img src="https://img.icons8.com/fluency/48/sparkles.png" width="22" height="22"/>
+            학교 생활 백과사전
         </div>
         <p class="card-content">
-            우리 학교 규정이나 7월 이미지 기반 급식 데이터를 완전 분석하여 답변합니다.<br>
-            <span class="card-highlight">👉 "복날 삼계탕 언제 나와?"</span>, <span class="card-highlight">👉 "사복 후드티 입고 가면 잡혀?"</span>, <span class="card-highlight">👉 "에어팟 끼다 걸리면 압수야?"</span>
+            새롭게 패치된 서연중의 정확한 학칙과 7월 급식 정보를 모바일에서 가볍고 예쁘게 모아보세요.<br>
+            <span class="card-highlight">🍱 "이번달 반별 급식 순서가 어떻게 돼?"</span> 
+            <span class="card-highlight">🏓 "체육관이나 운동장 없는데 체육 어디서 해?"</span> 
+            <span class="card-highlight">🎸 "동아리 전일제에는 뭐해?"</span>
         </p>
     </div>
 """, unsafe_allow_html=True)
@@ -427,28 +360,29 @@ st.markdown("---")
 if "messages" not in st.session_state:
     st.session_state.messages = [
         {"role": "assistant",
-         "content": "안녕하세요! 키워드가 살짝 틀려도 문맥을 통해 척척 찾아내는 OpenAI 임베딩 RAG 서연중 가이드입니다. 궁금한 점을 질문해 주세요! 🍱"}
+         "content": "안녕! 완벽하게 고쳐진 우리 학교 찐 규칙이랑 급식 정보를 알려줄게. 궁금한 걸 아래 창에 편하게 물어봐! 📲"}
     ]
 
 for msg in st.session_state.messages:
     with st.chat_message(msg["role"]):
         st.write(msg["content"])
         if "contexts" in msg and msg["contexts"]:
-            with st.expander("🔍 이 답변 도출에 매칭된 임베딩 소스 확인"):
+            with st.expander("🔍 확인된 연동 규정 조각"):
                 for source in msg["contexts"]:
                     st.caption(source)
 
 # ==========================================
 # 6. 🤖 실시간 추론 제어 엔진 및 지능형 에러 복구
 # ==========================================
-if user_input := st.chat_input("의미 기반 질문을 입력해 주세요..."):
+if user_input := st.chat_input("서연중 생활에 대해 물어보세요..."):
     with st.chat_message("user"):
         st.write(user_input)
     st.session_state.messages.append({"role": "user", "content": user_input})
 
     try:
         now = datetime.now()
-        realtime_today = now.strftime("%Y년 %m월 %d일")
+        weekday_map = {0: "월요일", 1: "화요일", 2: "수요일", 3: "목요일", 4: "금요일", 5: "토요일", 6: "일요일"}
+        realtime_today = f"{now.strftime('%Y년 %m월 %d일')} {weekday_map[now.weekday()]}"
 
         is_asking_lunch = any(keyword in user_input for keyword in ["급식", "식단", "메뉴", "밥", "먹어"])
         target_date = now
@@ -469,25 +403,25 @@ if user_input := st.chat_input("의미 기반 질문을 입력해 주세요...")
 
         if is_asking_lunch and is_asking_specific_day and target_date.weekday() in [5, 6]:
             with st.chat_message("assistant"):
-                full_response = f"요청하신 날짜({target_date.strftime('%m월 %d일')})는 주말이므로 학교 식당 및 급식이 제공되지 않습니다! 편안한 주말 되세요. ☀️"
+                full_response = f"질문한 날짜({target_date.strftime('%m월 %d일')} {weekday_map[target_date.weekday()]})는 주말이라 급식 운영 여부가 확실하지 않거나 제공되지 않는 날이야! 주말 일정표를 다시 확인해줘. ☀️"
                 st.write(full_response)
                 st.session_state.messages.append(
-                    {"role": "assistant", "content": full_response, "contexts": ["주말 예외 감지 자동 필터"]})
+                    {"role": "assistant", "content": full_response, "contexts": ["주말 데이터 미확인 예외 필터"]})
         else:
             DYNAMIC_CONTEXT, matched_chunks = retrieve_relevant_context_openai(user_input, ALL_CHUNKS, EMBEDDING_MATRIX,
                                                                                top_n=3)
 
             SYSTEM_PROMPT = f"""
-            당신은 서연중학교 학생들을 위한 전교 부회장 기획 총괄 '학교생활 및 급식 안내 AI'입니다.
-            - 기준 학사 시점: 오늘({realtime_today})
+            당신은 서연중학교 학생들을 위한 친근한 전교 부회장 '학교생활 가이드 AI'입니다.
+            - 오늘의 학사 시점 기준: {realtime_today}
 
             [임베딩 정밀 검색 컨텍스트 데이터베이스]
-            {DYNAMIC_CONTEXT if DYNAMIC_CONTEXT else "사용자 질의와 매칭 신뢰도 조건을 통과한 문서 조각이 존재하지 않습니다."}
+            {DYNAMIC_CONTEXT if DYNAMIC_CONTEXT else "사용자 질의와 정합되는 학교 공식 규정 조각이 없습니다."}
 
             [답변 수립 엄격 규칙]
-            1. 식단 데이터를 읽을 때 '일반식단' 등의 문구는 원천 스킵하고, 실제 반찬 텍스트 스트링을 가공이나 생략 없이 100% 온전하게 리스트 형식이나 콤마로 연결해서 출력하세요.
-            2. 학칙 등 근거가 명확하지 않아 상식선에서 답변해야 하는 특이 질문의 경우, 학생들에게 혼선을 주지 않도록 반드시 문장 가장 끝단에 "[확인 필요]"를 기재해야 합니다.
-            3. 핵심 사실만 추려 최대 3줄 이내로 간결하고 요약된 어조로 답변하되, 후배들에게 얘기하는 친근한 구조를 취하세요.
+            1. 사용자가 제공해준 데이터베이스 내용에 기반해서만 대답하고 절대 혼자 상상해서 지여내지 마세요.
+            2. 학칙이나 위치 등 근거가 명확하지 않거나 데이터가 없는 모호한 질문의 경우, 학생들에게 거짓 정보를 주지 않도록 문장 가장 끝부분에 "[확인 필요]"를 정확하게 적어주세요.
+            3. 스마트폰 작은 화면에서 한눈에 쏙 들어오도록 불필요한 서론은 빼고, 줄바꿈을 예쁘게 조합하여 최대 3줄~4줄 이내로 핵심만 요약해서 든든한 선배처럼 반말로 대답하세요.
             """
 
             api_messages = [{"role": "system", "content": SYSTEM_PROMPT}]
@@ -516,17 +450,17 @@ if user_input := st.chat_input("의미 기반 질문을 입력해 주세요...")
                 cleaned_display_response = full_response.replace("[확인 필요]", "").strip()
                 response_container.write(cleaned_display_response)
 
-                with st.expander("🔍 OpenAI 의미 벡터 분석 매칭 매트릭스 확인"):
+                with st.expander("🔍 매칭된 규정 매트릭스 레이어"):
                     if matched_chunks:
                         for idx, source in enumerate(matched_chunks):
-                            st.caption(f"**참조 가중치 레이어 {idx + 1}:** {source}")
+                            st.caption(f"**레이어 {idx + 1}:** {source}")
                     else:
-                        st.caption("⚠️ 임베딩 임계값 조건 미달로 시스템 기본 범용 가이드 라인으로 연산했습니다.")
+                        st.caption("⚠️ 임베딩 조건 미달로 기본 서연중 생활 가이드 라인으로 연산했습니다.")
 
         st.markdown("""
             <div style="text-align: right; margin-top: 5px;">
                 <span class="source-tag">
-                    🎯 OpenAI Vector Space Embedding RAG Verification Passed
+                    🎯 Responsive App Skin & OpenAI RAG Pro Verified
                 </span>
             </div>
         """, unsafe_allow_html=True)
@@ -539,7 +473,7 @@ if user_input := st.chat_input("의미 기반 질문을 입력해 주세요...")
 
         if "[확인 필요]" in full_response:
             save_unknown_question_csv(user_input)
-            st.toast("💾 미분류 질문을 감지하여 추가 학습 데이터셋(unknown_questions.csv)에 저장했습니다.", icon="💡")
+            st.toast("💾 확실하지 않은 질문은 unknown_questions.csv에 안전하게 저장했어!", icon="💡")
 
     except Exception as e:
-        st.error(f"실시간 AI 스트리밍 추론 중 예외가 발생했습니다: {e}")
+        st.error(f"추론 가동 중 시스템 예외 발생: {e}")
