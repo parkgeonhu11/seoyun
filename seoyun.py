@@ -24,34 +24,45 @@ except KeyError:
 
 client = OpenAI(api_key=MY_OPENAI_API_KEY)
 
-# 🎨 모바일에서 밋밋하지 않고 '앱'처럼 트렌디하게 보이도록 인라인 Glassmorphism 및 그라데이션 커스텀 CSS 적용
+# 🎨 모바일 최적화: 여백 제거 및 가로폭 꽉 차게 매칭하는 강력한 커스텀 CSS 적용
 st.markdown("""
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght=400;500;700;900&display=swap');
+
+        /* 📱 Streamlit 자체 모바일 기본 여백(Padding) 강제 리셋 */
+        .block-container {
+            padding-top: 1rem !important;
+            padding-bottom: 1rem !important;
+            padding-left: 0.8rem !important;
+            padding-right: 0.8rem !important;
+            max-width: 100% !important;
+        }
 
         /* 기본 폰트 일괄 적용 및 여백 최적화 */
         .stApp, .custom-wrap, .title-section-container, .premium-card {
             font-family: 'Noto Sans KR', sans-serif !important;
         }
 
-        /* 📱 스마트폰 전용 상단 네온 하이라이트 배너 */
+        /* 📱 스마트폰 전용 상단 네온 하이라이트 배너 (모바일 폭 100% 대응) */
         .title-section-container { 
-            padding: 24px 16px; 
-            border-radius: 16px; 
+            padding: 20px 14px; 
+            border-radius: 12px; 
             background: linear-gradient(135deg, #FFF5F5 0%, #FFFDF9 100%) !important;
             border-left: 5px solid #FF6B6B;
             border-top: 1px solid #EAEAEA;
             border-right: 1px solid #EAEAEA;
             border-bottom: 1px solid #EAEAEA;
-            box-shadow: 0 6px 20px rgba(255, 107, 107, 0.05); 
-            margin-bottom: 18px; 
+            box-shadow: 0 4px 15px rgba(255, 107, 107, 0.04); 
+            margin-bottom: 15px; 
             text-align: left; 
+            width: 100%;
+            box-sizing: border-box;
         }
         .title-text { 
             background: linear-gradient(135deg, #FF4B4B, #FF8E53); 
             -webkit-background-clip: text; 
             -webkit-text-fill-color: transparent; 
-            font-size: 1.9rem !important; 
+            font-size: 1.65rem !important; 
             font-weight: 900 !important; 
             margin: 0; 
             letter-spacing: -1px; 
@@ -59,7 +70,7 @@ st.markdown("""
         }
         .subtitle-text { 
             color: #555555 !important;
-            font-size: 0.9rem !important; 
+            font-size: 0.85rem !important; 
             font-weight: 500 !important; 
             margin-top: 6px; 
             margin-bottom: 0; 
@@ -67,52 +78,54 @@ st.markdown("""
             line-height: 1.4;
         }
 
-        /* 메인 안내 카드 비주얼 강화 */
+        /* 메인 안내 카드 비주얼 강화 (좌우 삐져나감 방지) */
         .premium-card { 
-            padding: 18px 20px; 
+            padding: 16px 16px; 
             background: #FFFFFF !important;
-            border-radius: 14px; 
+            border-radius: 12px; 
             border: 1px solid #F0F0F0; 
-            box-shadow: 0 4px 14px rgba(0,0,0,0.03); 
-            margin-bottom: 22px; 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.02); 
+            margin-bottom: 18px; 
+            width: 100%;
+            box-sizing: border-box;
         }
         .card-title { 
-            font-size: 1.05rem; 
+            font-size: 1.0rem; 
             font-weight: 700; 
             color: #222222 !important;
             margin-top: 0; 
-            margin-bottom: 10px; 
+            margin-bottom: 8px; 
             display: flex; 
             align-items: center; 
-            gap: 8px; 
+            gap: 6px; 
         }
         .card-content { 
-            font-size: 0.9rem; 
-            line-height: 1.6; 
+            font-size: 0.88rem; 
+            line-height: 1.55; 
             color: #444444 !important;
             margin: 0; 
             word-break: keep-all;
         }
         
-        /* 빵부스러기 스타일의 칩 컴포넌트 */
+        /* 빵부스러기 스타일의 칩 컴포넌트 (줄바꿈 최적화) */
         .card-highlight { 
             color: #FF5252 !important; 
             font-weight: 700; 
             background: #FFF1F1 !important;
-            padding: 3px 8px;
+            padding: 3px 6px;
             border-radius: 6px;
             display: inline-block; 
-            margin: 3px 2px;
-            font-size: 0.85rem;
+            margin: 4px 2px;
+            font-size: 0.82rem;
             border: 1px solid #FFE3E3;
         }
 
         .source-tag {
             background-color: #E9ECEF !important; 
             color: #495057 !important; 
-            padding: 5px 12px; 
+            padding: 4px 10px; 
             border-radius: 20px; 
-            font-size: 0.72rem; 
+            font-size: 0.7rem; 
             font-weight: 600;
             display: inline-block;
             border: 1px solid #DEE2E6;
@@ -127,8 +140,9 @@ st.markdown("""
             margin-bottom: 12px;
         }
 
-        /* PC 화면 대응 크기 보정 */
+        /* 🖥️ PC 화면으로 넓어질 때만 레이아웃을 확장하는 미디어 쿼리 */
         @media (min-width: 768px) {
+            .block-container { padding: 3rem 5rem !important; }
             .title-section-container { padding: 30px 35px; border-radius: 20px; text-align: center; }
             .title-text { font-size: 2.6rem !important; }
             .subtitle-text { font-size: 1.1rem !important; }
