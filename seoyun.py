@@ -6,70 +6,73 @@ import csv
 import numpy as np
 
 # ==========================================
-# 1. 🌐 웹페이지 기본 구성 및 모바일 초고도화 테마 정의
+# 1. 🌐 웹페이지 기본 구성 및 프리미엄 테마 정의
 # ==========================================
 st.set_page_config(
     page_title="Seoyeon Middle School AI Center",
     page_icon="🤖",
     layout="wide",
-    initial_sidebar_state="collapsed" # 모바일 사용성 극대화를 위해 사이드바 기본 접힘
+    initial_sidebar_state="collapsed" # 모바일 화면 확보를 위해 접힘 유지
 )
 
-# 🔑 OpenAI API 키 고정 연동 -> Streamlit Secrets 환경변수 보안 적용
+# 🔑 OpenAI API 키 환경변수 보안 적용
 try:
     MY_OPENAI_API_KEY = st.secrets["OPENAI_API_KEY"]
 except KeyError:
-    st.error("Streamlit Secrets에 'OPENAI_API_KEY'가 설정되지 않았습니다. 관리자 설정을 확인해주세요.")
+    st.error("Streamlit Secrets에 'OPENAI_API_KEY'가 설정되지 않았습니다.")
     st.stop()
 
 client = OpenAI(api_key=MY_OPENAI_API_KEY)
 
-# 🎨 모바일 최적화: 여백 제거 및 가로폭 꽉 차게 매칭하는 강력한 커스텀 CSS 적용
+# 🎨 프리미엄 모바일 UI/UX 리디자인 (가로 스크롤 방지 및 버튼 크기 확장)
 st.markdown("""
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght=400;500;700;900&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap');
 
-        /* 📱 Streamlit 자체 모바일 기본 여백(Padding) 강제 리셋 */
+        /* 📱 모바일 화면 가로 스크롤 절대 방지 및 핵심 여백 최적화 */
+        html, body, [data-testid="stAppViewContainer"] {
+            max-width: 100vw !important;
+            overflow-x: hidden !important;
+        }
+        
         .block-container {
             padding-top: 1rem !important;
-            padding-bottom: 1rem !important;
-            padding-left: 0.8rem !important;
-            padding-right: 0.8rem !important;
+            padding-bottom: 2rem !important;
+            padding-left: 0.5rem !important;
+            padding-right: 0.5rem !important;
             max-width: 100% !important;
+            box-sizing: border-box !important;
         }
 
-        /* 기본 폰트 일괄 적용 및 여백 최적화 */
+        /* 전역 폰트 미려하게 세팅 */
         .stApp, .custom-wrap, .title-section-container, .premium-card {
             font-family: 'Noto Sans KR', sans-serif !important;
         }
 
-        /* 📱 스마트폰 전용 상단 네온 하이라이트 배너 (모바일 폭 100% 대응) */
+        /* ✨ 상단 메인 비주얼 배너 (모바일 폭 맞춤) */
         .title-section-container { 
             padding: 20px 14px; 
-            border-radius: 12px; 
-            background: linear-gradient(135deg, #FFF5F5 0%, #FFFDF9 100%) !important;
-            border-left: 5px solid #FF6B6B;
-            border-top: 1px solid #EAEAEA;
-            border-right: 1px solid #EAEAEA;
-            border-bottom: 1px solid #EAEAEA;
-            box-shadow: 0 4px 15px rgba(255, 107, 107, 0.04); 
-            margin-bottom: 15px; 
+            border-radius: 16px; 
+            background: linear-gradient(135deg, #FFFAF6 0%, #FFF5F5 100%) !important;
+            border: 1px solid #FFE3E3;
+            box-shadow: 0 8px 24px rgba(255, 107, 107, 0.07); 
+            margin-bottom: 16px; 
             text-align: left; 
             width: 100%;
-            box-sizing: border-box;
+            box-sizing: border-box !important;
         }
         .title-text { 
-            background: linear-gradient(135deg, #FF4B4B, #FF8E53); 
+            background: linear-gradient(135deg, #FF4B4B, #FF7E40); 
             -webkit-background-clip: text; 
             -webkit-text-fill-color: transparent; 
-            font-size: 1.65rem !important; 
+            font-size: 1.6rem !important; 
             font-weight: 900 !important; 
             margin: 0; 
             letter-spacing: -1px; 
             line-height: 1.2;
         }
         .subtitle-text { 
-            color: #555555 !important;
+            color: #666666 !important;
             font-size: 0.85rem !important; 
             font-weight: 500 !important; 
             margin-top: 6px; 
@@ -78,60 +81,71 @@ st.markdown("""
             line-height: 1.4;
         }
 
-        /* 메인 안내 카드 비주얼 강화 (좌우 삐져나감 방지) */
+        /* 💎 세련된 인포메이션 보드 카드 */
         .premium-card { 
-            padding: 16px 16px; 
+            padding: 16px 14px; 
             background: #FFFFFF !important;
-            border-radius: 12px; 
-            border: 1px solid #F0F0F0; 
-            box-shadow: 0 4px 12px rgba(0,0,0,0.02); 
-            margin-bottom: 18px; 
+            border-radius: 14px; 
+            border: 1px solid #EFEFEF; 
+            box-shadow: 0 6px 16px rgba(0,0,0,0.02); 
+            margin-bottom: 16px; 
             width: 100%;
-            box-sizing: border-box;
+            box-sizing: border-box !important;
         }
         .card-title { 
             font-size: 1.0rem; 
             font-weight: 700; 
-            color: #222222 !important;
+            color: #111111 !important;
             margin-top: 0; 
-            margin-bottom: 8px; 
+            margin-bottom: 10px; 
             display: flex; 
             align-items: center; 
             gap: 6px; 
         }
         .card-content { 
-            font-size: 0.88rem; 
-            line-height: 1.55; 
+            font-size: 0.85rem; 
+            line-height: 1.5; 
             color: #444444 !important;
             margin: 0; 
             word-break: keep-all;
         }
         
-        /* 빵부스러기 스타일의 칩 컴포넌트 (줄바꿈 최적화) */
+        /* 📱 추천 태그 칩 모바일 가독성 업 */
         .card-highlight { 
-            color: #FF5252 !important; 
-            font-weight: 700; 
-            background: #FFF1F1 !important;
-            padding: 3px 6px;
-            border-radius: 6px;
+            color: #FF4B4B !important; 
+            font-weight: 600; 
+            background: #FFF0F0 !important;
+            padding: 6px 10px;
+            border-radius: 20px;
             display: inline-block; 
             margin: 4px 2px;
-            font-size: 0.82rem;
-            border: 1px solid #FFE3E3;
+            font-size: 0.8rem;
+            border: 1px solid #FFE1E1;
+            box-shadow: 0 2px 5px rgba(255, 75, 75, 0.04);
         }
 
         .source-tag {
-            background-color: #E9ECEF !important; 
+            background-color: #F1F3F5 !important; 
             color: #495057 !important; 
-            padding: 4px 10px; 
+            padding: 5px 12px; 
             border-radius: 20px; 
-            font-size: 0.7rem; 
+            font-size: 0.72rem; 
             font-weight: 600;
             display: inline-block;
-            border: 1px solid #DEE2E6;
+            border: 1px solid #E9ECEF;
         }
 
-        /* 사이드바 포인트 박스 */
+        /* 🔘 모바일용 거대하고 누르기 쉬운 버튼 커스텀 스타일 정의 */
+        div[data-testid="stSidebar"] button, div.stButton > button {
+            width: 100% !important;
+            padding: 12px 20px !important;
+            font-size: 1rem !important;
+            font-weight: 700 !important;
+            min-height: 48px !important; /* 모바일 터치 최소 규격 확보 */
+            border-radius: 12px !important;
+        }
+
+        /* 사이드바 커스텀 포인트 */
         .sidebar-custom-box {
             background: linear-gradient(135deg, #FFF0F0 0%, #FFE3E3 100%) !important; 
             border-radius: 12px; 
@@ -140,23 +154,23 @@ st.markdown("""
             margin-bottom: 12px;
         }
 
-        /* 🖥️ PC 화면으로 넓어질 때만 레이아웃을 확장하는 미디어 쿼리 */
+        /* 🖥️ 데스크톱 환경 반응형 대응 */
         @media (min-width: 768px) {
-            .block-container { padding: 3rem 5rem !important; }
-            .title-section-container { padding: 30px 35px; border-radius: 20px; text-align: center; }
-            .title-text { font-size: 2.6rem !important; }
-            .subtitle-text { font-size: 1.1rem !important; }
-            .premium-card { padding: 22px 28px; border-radius: 16px; }
-            .card-title { font-size: 1.2rem; }
+            .block-container { padding: 2.5rem 6rem !important; }
+            .title-section-container { padding: 32px 40px; border-radius: 24px; text-align: center; }
+            .title-text { font-size: 2.8rem !important; }
+            .subtitle-text { font-size: 1.1rem !important; margin-top: 10px; }
+            .premium-card { padding: 24px 32px; border-radius: 20px; }
+            .card-title { font-size: 1.25rem; }
             .card-content { font-size: 0.95rem; }
-            .card-highlight { padding: 3px 8px; display: inline; margin: 0 3px; }
+            .card-highlight { padding: 5px 12px; margin: 0 4px; display: inline-block; }
         }
     </style>
 """, unsafe_allow_html=True)
 
 
 # ==========================================
-# 2. 📂 영속성 데이터 허브 및 로컬 캐싱 RAG 엔진 (최신 학칙 완벽 동기화)
+# 2. 📂 영속성 데이터 허브 및 로컬 캐싱 RAG 엔진
 # ==========================================
 @st.cache_resource
 def DEEP_INITIALIZE_RAG_ENGINE():
@@ -164,7 +178,6 @@ def DEEP_INITIALIZE_RAG_ENGINE():
     lunch_path = "seoyeon_lunch_data.csv"
     embed_cache_path = "seoyeon_embeddings.npy"
 
-    # 동기화를 위해 기존 캐시 데이터 강제 리셋 후 재생성
     if os.path.exists(rule_path): os.remove(rule_path)
     if os.path.exists(lunch_path): os.remove(lunch_path)
     if os.path.exists(embed_cache_path): os.remove(embed_cache_path)
@@ -256,7 +269,7 @@ def DEEP_INITIALIZE_RAG_ENGINE():
 try:
     ALL_CHUNKS, EMBEDDING_MATRIX = DEEP_INITIALIZE_RAG_ENGINE()
 except Exception as e:
-    st.error(f"데이터 갱신 중 예외가 발생했습니다: {e}")
+    st.error(f"데이터 파일 처리 오류: {e}")
     st.stop()
 
 
@@ -274,7 +287,7 @@ def retrieve_relevant_context_openai(query, documents, embedding_matrix, top_n=3
         matched_chunks = [documents[i] for i in top_indices if similarities[i] > 0.15]
         return "\n".join(matched_chunks), matched_chunks
     except Exception as e:
-        return f"문맥 검색 실패 ({e})", []
+        return f"문맥 오류 ({e})", []
 
 
 def save_unknown_question_csv(question):
@@ -289,7 +302,7 @@ def save_unknown_question_csv(question):
 
 
 # ==========================================
-# 3. 📊 최적화된 검증 데이터 데이터셋
+# 3. 📊 검증 데이터 셋
 # ==========================================
 TEST_SUITE = [
     {"q": "지각 사유 아플때 인정 돼?", "target": "지각 처리 인정 기준"},
@@ -310,15 +323,15 @@ TEST_SUITE = [
 ]
 
 # ==========================================
-# 4. 📱 사이드바 컨트롤 대시보드
+# 4. 📱 사이드바 대시보드 컨트롤
 # ==========================================
 with st.sidebar:
     st.markdown("## 🏫 Seoyeon UI Pro v3")
     st.caption("전교 부회장 기획 프레임워크 최적화")
     st.markdown("---")
-    st.success("🔒 실시간 피드백 보정 엔진 활성화")
+    st.success("🔒 실시간 피드백 보정 가동중")
 
-    st.markdown("### 🧪 RAG 정밀 스코어링")
+    st.markdown("### 🧪 RAG 정밀 스코어")
     if st.button("신규 규정 15셋 무결성 채점"):
         progress_bar = st.progress(0)
         success_count = 0
@@ -334,23 +347,22 @@ with st.sidebar:
         progress_bar.empty()
 
     st.markdown("---")
-    st.markdown("#### 📱 레이아웃 팁")
+    st.markdown("#### 📱 레이아웃 안내")
     st.markdown("""
         <div class="sidebar-custom-box">
             <p style="color: #FF4B4B; margin: 0; font-weight: 600; font-size: 0.85rem; word-break:keep-all;">
-                🚨 체육관과 운동장이 없으므로 탁구장/당구장/헬스장 및 외부 시설(볼링장, 농구장 등) 위치를 질문하면 즉시 길을 안내합니다.
+                🚨 체육관/운동장이 없으므로 교내 탁구장, 헬스장, 당구 시설 및 외부 활동 장소를 상세히 가이드합니다.
             </p>
         </div>
     """, unsafe_allow_html=True)
-    st.caption("🤖 High-Density Layout Engine v3")
 
 # ==========================================
-# 5. 👑 메인 캔버스 및 고성능 인터페이스 가동
+# 5. 👑 메인 가이드 인터페이스 레이아웃
 # ==========================================
 st.markdown("""
     <div class="title-section-container">
         <h1 class="title-text">서연중학교 챗봇 AI</h1>
-        <p class="subtitle-text">✨ 전교 부회장 운영 | 모바일 전용 비주얼 강화 RAG 시스템</p>
+        <p class="subtitle-text">✨ 전교 부회장 기획 운영 | 모바일 최적화 고화질 프리미엄 RAG</p>
     </div>
 """, unsafe_allow_html=True)
 
@@ -361,10 +373,10 @@ st.markdown("""
             학교 생활 백과사전
         </div>
         <p class="card-content">
-            새롭게 패치된 서연중의 정확한 학칙과 7월 급식 정보를 모바일에서 가볍고 예쁘게 모아보세요.<br>
-            <span class="card-highlight">🍱 "이번달 반별 급식 순서가 어떻게 돼?"</span> 
-            <span class="card-highlight">🏓 "체육관이나 운동장 없는데 체육 어디서 해?"</span> 
-            <span class="card-highlight">🎸 "동아리 전일제에는 뭐해?"</span>
+            새롭게 패치된 서연중의 학칙과 7월 급식 일정을 한눈에 간편하게 모아보세요.<br><br>
+            <span class="card-highlight">🍱 반별 급식 순서가 어떻게 돼?</span> 
+            <span class="card-highlight">🏓 체육관 없는데 체육 어디서 해?</span> 
+            <span class="card-highlight">🎸 동아리 전일제에는 뭐해?</span>
         </p>
     </div>
 """, unsafe_allow_html=True)
@@ -374,21 +386,21 @@ st.markdown("---")
 if "messages" not in st.session_state:
     st.session_state.messages = [
         {"role": "assistant",
-         "content": "안녕! 완벽하게 고쳐진 우리 학교 찐 규칙이랑 급식 정보를 알려줄게. 궁금한 걸 아래 창에 편하게 물어봐! 📲"}
+         "content": "안녕! 완벽하게 디자인 보정된 서연중 챗봇이야. 궁금한 걸 아래 입력창에 편하게 물어봐! 📲"}
     ]
 
 for msg in st.session_state.messages:
     with st.chat_message(msg["role"]):
         st.write(msg["content"])
         if "contexts" in msg and msg["contexts"]:
-            with st.expander("🔍 확인된 연동 규정 조각"):
+            with st.expander("🔍 매칭 학칙 컨텍스트"):
                 for source in msg["contexts"]:
                     st.caption(source)
 
 # ==========================================
-# 6. 🤖 실시간 추론 제어 엔진 및 지능형 에러 복구
+# 6. 🤖 실시간 추론 제어 엔진 
 # ==========================================
-if user_input := st.chat_input("서연중 생활에 대해 물어보세요..."):
+if user_input := st.chat_input("서연중 생활에 대해 질문해보세요..."):
     with st.chat_message("user"):
         st.write(user_input)
     st.session_state.messages.append({"role": "user", "content": user_input})
@@ -417,10 +429,10 @@ if user_input := st.chat_input("서연중 생활에 대해 물어보세요..."):
 
         if is_asking_lunch and is_asking_specific_day and target_date.weekday() in [5, 6]:
             with st.chat_message("assistant"):
-                full_response = f"질문한 날짜({target_date.strftime('%m월 %d일')} {weekday_map[target_date.weekday()]})는 주말이라 급식 운영 여부가 확실하지 않거나 제공되지 않는 날이야! 주말 일정표를 다시 확인해줘. ☀️"
+                full_response = f"질문한 날짜({target_date.strftime('%m월 %d일')} {weekday_map[target_date.weekday()]})는 주말이라 급식이 없어! 주말 일정표를 다시 확인해줘. ☀️"
                 st.write(full_response)
                 st.session_state.messages.append(
-                    {"role": "assistant", "content": full_response, "contexts": ["주말 데이터 미확인 예외 필터"]})
+                    {"role": "assistant", "content": full_response, "contexts": ["주말 예외 필터 레이어"]})
         else:
             DYNAMIC_CONTEXT, matched_chunks = retrieve_relevant_context_openai(user_input, ALL_CHUNKS, EMBEDDING_MATRIX,
                                                                                top_n=3)
@@ -464,17 +476,17 @@ if user_input := st.chat_input("서연중 생활에 대해 물어보세요..."):
                 cleaned_display_response = full_response.replace("[확인 필요]", "").strip()
                 response_container.write(cleaned_display_response)
 
-                with st.expander("🔍 매칭된 규정 매트릭스 레이어"):
+                with st.expander("🔍 매칭 규정 레이어"):
                     if matched_chunks:
                         for idx, source in enumerate(matched_chunks):
-                            st.caption(f"**레이어 {idx + 1}:** {source}")
+                            st.caption(f"**매칭 {idx + 1}:** {source}")
                     else:
-                        st.caption("⚠️ 임베딩 조건 미달로 기본 서연중 생활 가이드 라인으로 연산했습니다.")
+                        st.caption("⚠️ 가이드라인 매칭 조건 미달 기본 추론 연산 수행.")
 
         st.markdown("""
             <div style="text-align: right; margin-top: 5px;">
                 <span class="source-tag">
-                    🎯 Responsive App Skin & OpenAI RAG Pro Verified
+                    🎯 Premium Redesign & Mobile Optimized Verified
                 </span>
             </div>
         """, unsafe_allow_html=True)
@@ -487,7 +499,7 @@ if user_input := st.chat_input("서연중 생활에 대해 물어보세요..."):
 
         if "[확인 필요]" in full_response:
             save_unknown_question_csv(user_input)
-            st.toast("💾 확실하지 않은 질문은 unknown_questions.csv에 안전하게 저장했어!", icon="💡")
+            st.toast("💾 세부 조회가 필요한 질문은 unknown_questions.csv에 보관했어!", icon="💡")
 
     except Exception as e:
-        st.error(f"추론 가동 중 시스템 예외 발생: {e}")
+        st.error(f"추론 모듈 예외 발생: {e}")
