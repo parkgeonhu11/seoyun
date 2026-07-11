@@ -6,7 +6,7 @@ import csv
 import numpy as np
 
 # ==========================================
-# 1. 🌐 다크모드 강제 고정 및 모바일 통합 테마 정의
+# 1. 🌐 웹페이지 기본 구성 및 모바일 크로스 브라우징 레이아웃 정의
 # ==========================================
 st.set_page_config(
     page_title="서연중학교 AI 안내 센터",
@@ -24,33 +24,21 @@ except KeyError:
 
 client = OpenAI(api_key=MY_OPENAI_API_KEY)
 
-# 🎨 안드로이드 크롬 / 아이폰 사파리 브라우저별 파편화 완전 방어 CSS (강제 다크모드)
+# 🎨 예전의 깔끔한 레이아웃 복구 + 모바일 입력창 크기 최적화
 st.markdown("""
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap');
 
-        /* -------------------------------------------
-         * 1) 🖤 전역 다크모드 시스템 강제 덮어쓰기 (테마 전환 차단)
-         * ------------------------------------------- */
-        :root {
-            --background-color: #121214 !important;
-            --secondary-background-color: #1a1a1e !important;
-            --text-color: #f1f3f5 !important;
-            --primary-color: #ff4b4b !important;
-        }
-
-        /* Streamlit 고유 배경 요소 다크화 */
-        html, body, [data-testid="stAppViewContainer"], [data-testid="stHeader"], [data-testid="stSidebar"] {
-            background-color: #121214 !important;
-            color: #f1f3f5 !important;
+        /* 📱 모바일 기기별 글자 및 레이아웃 축소 원천 방지 */
+        html, body, [data-testid="stAppViewContainer"], [data-testid="stHeader"] {
             max-width: 100vw !important;
             overflow-x: hidden !important;
             box-sizing: border-box !important;
-            -webkit-text-size-adjust: none !important; /* 📱 안드로이드 크롬/사파리 글자 크기 강제 축소 방지 */
+            -webkit-text-size-adjust: none !important;
             text-size-adjust: none !important;
         }
-
-        /* ⚙️ 우측 상단 테마 변경 설정을 포함한 메뉴 및 헤더 툴바 완전 제거 (모드 전환 프로그램 무력화) */
+        
+        /* ⚙️ 불필요한 툴바 및 메뉴 제거 */
         [data-testid="stToolbar"], [data-testid="stDecoration"], #MainMenu, footer {
             display: none !important;
             visibility: hidden !important;
@@ -58,146 +46,133 @@ st.markdown("""
         }
 
         .block-container {
-            padding-top: 1.5rem !important;
-            padding-bottom: 4rem !important;
+            padding-top: 1rem !important;
+            padding-bottom: 3rem !important;
             padding-left: 14px !important;
             padding-right: 14px !important;
             max-width: 100% !important;
             box-sizing: border-box !important;
         }
 
+        /* 전역 폰트 세팅 */
         .stApp, .title-section-container, .premium-card {
             font-family: 'Noto Sans KR', sans-serif !important;
         }
 
-        /* -------------------------------------------
-         * 2) 📱 안드로이드 크롬/삼성인터넷 가독성 저하 방지 배너
-         * ------------------------------------------- */
+        /* ✨ 예전의 시그니처 상단 메인 비주얼 배너 레이아웃 */
         .title-section-container { 
-            padding: 22px 18px; 
+            padding: 22px 16px; 
             border-radius: 16px; 
-            background: linear-gradient(135deg, #1e1e24 0%, #2a1b1b 100%) !important;
-            border: 1px solid #3a2525;
-            margin-bottom: 18px; 
+            background: linear-gradient(135deg, #FFFAF6 0%, #FFF5F5 100%) !important;
+            border: 1px solid #FFE3E3;
+            box-shadow: 0 8px 24px rgba(255, 107, 107, 0.05); 
+            margin-bottom: 16px; 
             text-align: left; 
             width: 100%;
             box-sizing: border-box !important;
         }
         .title-text { 
-            color: #ff5c5c !important;
-            font-size: 1.6rem !important; 
-            font-weight: 800 !important; 
+            background: linear-gradient(135deg, #FF4B4B, #FF7E40); 
+            -webkit-background-clip: text; 
+            -webkit-text-fill-color: transparent; 
+            font-size: 1.5rem !important; 
+            font-weight: 900 !important; 
             margin: 0; 
-            line-height: 1.3;
+            letter-spacing: -1px; 
+            line-height: 1.2;
         }
         .subtitle-text { 
-            color: #b0b5bc !important;
-            font-size: 0.9rem !important; 
+            color: #666666 !important;
+            font-size: 0.85rem !important; 
             font-weight: 500 !important; 
             margin-top: 6px; 
             margin-bottom: 0; 
+            word-break: keep-all; 
+            line-height: 1.4;
         }
 
-        /* 💎 다크모드 카드 컴포넌트 */
+        /* 💎 예전 인포메이션 보드 카드 레이아웃 */
         .premium-card { 
-            padding: 18px; 
-            background: #1a1a1e !important;
-            border-radius: 16px; 
-            border: 1px solid #2d2d34; 
-            box-shadow: 0 4px 16px rgba(0,0,0,0.2); 
-            margin-bottom: 18px; 
+            padding: 18px 16px; 
+            background: #FFFFFF !important;
+            border-radius: 14px; 
+            border: 1px solid #F0F0F0; 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.01); 
+            margin-bottom: 16px; 
             width: 100%;
             box-sizing: border-box !important;
         }
         .card-title { 
-            font-size: 1.05rem; 
+            font-size: 0.95rem; 
             font-weight: 700; 
-            color: #ffffff !important;
+            color: #111111 !important;
+            margin-top: 0; 
             margin-bottom: 10px; 
             display: flex; 
             align-items: center; 
-            gap: 8px; 
+            gap: 6px; 
         }
         .card-content { 
-            font-size: 0.9rem; 
-            line-height: 1.6; 
-            color: #ccd0d5 !important;
+            font-size: 0.85rem; 
+            line-height: 1.5; 
+            color: #444444 !important;
             margin: 0; 
             word-break: keep-all;
         }
         
-        /* 🔥 질문 칩 크기 안드로이드 크롬 대응 대폭 확장 */
+        /* 📱 추천 질문 태그 칩 스타일 및 터치 영역 */
         .card-highlight { 
-            color: #ff5c5c !important; 
+            color: #FF4B4B !important; 
             font-weight: 600; 
-            background: #2d1f1f !important;
-            padding: 10px 14px;
+            background: #FFF0F0 !important;
+            padding: 6px 12px;
             border-radius: 20px;
             display: inline-block; 
-            margin: 6px 4px;
-            font-size: 0.88rem;
-            border: 1px solid #4a2e2e;
+            margin: 4px 2px;
+            font-size: 0.8rem;
+            border: 1px solid #FFE1E1;
             touch-action: manipulation;
         }
 
-        /* -------------------------------------------
-         * 3) 🔘 브라우저별 버튼 무조건 크게 확대 핵 (핵심 수정)
-         * ------------------------------------------- */
-        /* 안드로이드 크롬, 삼성인터넷, iOS 사파리 공통 적용 버튼 빌더 */
-        div.stButton > button, div[data-testid="stSidebar"] button, .st-emotion-cache-19rx9w1e {
+        /* 🔘 일반 버튼 스타일 최적화 (지나치게 거대해지지 않도록 수정) */
+        div.stButton > button, div[data-testid="stSidebar"] button {
             width: 100% !important;
-            padding: 16px 22px !important;
-            font-size: 1.1rem !important;
-            font-weight: 700 !important;
-            background-color: #ff4b4b !important;
-            color: #ffffff !important;
-            min-height: 56px !important; /* 안드로이드 크롬 터치 스케일링 무시하고 고정 */
-            height: 56px !important;
-            border-radius: 14px !important;
-            border: none !important;
+            padding: 10px 16px !important;
+            font-size: 0.95rem !important;
+            font-weight: 600 !important;
+            border-radius: 10px !important;
             box-sizing: border-box !important;
-            box-shadow: 0 4px 10px rgba(255, 75, 75, 0.3) !important;
-            -webkit-appearance: none !important; /* 브라우저 기본 버튼 스타일 무력화 */
-            appearance: none !important;
             touch-action: manipulation !important;
         }
-        
-        div.stButton > button:hover, div.stButton > button:active {
-            background-color: #e03e3e !important;
-            color: #ffffff !important;
-        }
 
-        /* 💬 하단 입력창 크롬에서 씹히거나 작아지는 현상 보정 */
+        /* 💬 [개선] 핸드폰에서 거대해 보이던 채팅 입력창 높이 및 크기 정밀 제어 */
         div[data-testid="stChatInput"] {
-            background-color: #1a1a1e !important;
-            border-radius: 14px !important;
-            border: 1px solid #3a3a44 !important;
-            padding: 4px !important;
+            padding: 0px !important;
         }
-        
         div[data-testid="stChatInput"] textarea {
-            min-height: 56px !important;
-            font-size: 1.05rem !important;
-            background-color: transparent !important;
-            color: #ffffff !important;
-            padding: 14px !important;
-            line-height: 1.4 !important;
+            min-height: 42px !important;
+            height: 42px !important;
+            max-height: 100px !important;
+            font-size: 0.95rem !important;
+            padding: 10px 12px !important;
+            line-height: 1.3 !important;
         }
 
-        /* 마크다운 텍스트 및 기본 위젯 글자 크기 보정 */
-        p, span, li, label, .stMarkdown {
-            color: #f1f3f5 !important;
-            font-size: 1rem !important;
+        .sidebar-custom-box {
+            background: linear-gradient(135deg, #FFF0F0 0%, #FFE3E3 100%) !important; 
+            border-radius: 12px; 
+            padding: 12px; 
+            border: 1px solid #FFAFAF; 
         }
 
-        /* 🖥️ 대화면 데스크톱 브라우저 역대응 스케일 밸런스 */
+        /* 🖥️ PC/데스크톱 반응형 밸런스 유지 */
         @media (min-width: 768px) {
-            .block-container { padding: 2.5rem 6rem !important; }
-            .title-section-container { padding: 26px 36px; text-align: center; }
-            .title-text { font-size: 2.4rem !important; }
-            .subtitle-text { font-size: 1.05rem !important; }
-            .premium-card { padding: 22px 28px; }
-            .card-highlight { padding: 8px 14px; margin: 0 6px; }
+            .block-container { padding: 2rem 5rem !important; }
+            .title-section-container { padding: 26px 32px; text-align: center; }
+            .title-text { font-size: 2.2rem !important; }
+            .subtitle-text { font-size: 1rem !important; }
+            .premium-card { padding: 20px 24px; }
+            .card-highlight { padding: 6px 12px; margin: 0 4px; }
         }
     </style>
 """, unsafe_allow_html=True)
@@ -336,24 +311,24 @@ def save_unknown_question_csv(question):
 
 
 # ==========================================
-# 3. 📱 사이드바 메뉴 (다크 스킨)
+# 3. 📱 사이드바 메뉴
 # ==========================================
 with st.sidebar:
-    st.markdown("<h2 style='color:#ffffff;'>🏫 서연중 AI 가이드</h2>", unsafe_allow_html=True)
+    st.markdown("## 🏫 서연중 AI 가이드")
     st.caption("학생 지원 대시보드")
-    st.markdown("<hr style='border:1px solid #2d2d34;'>", unsafe_allow_html=True)
+    st.markdown("---")
     
-    st.markdown("<h4 style='color:#ffffff;'>안내사항</h4>", unsafe_allow_html=True)
+    st.markdown("#### 안내사항")
     st.markdown("""
-        <div style="background: linear-gradient(135deg, #2d1f1f 0%, #4a2e2e 100%) !important; border-radius: 12px; padding: 14px; border: 1px solid #6b3e3e;">
-            <p style="color: #ff5c5c; margin: 0; font-weight: 600; font-size: 0.88rem; word-break:keep-all;">
+        <div class="sidebar-custom-box">
+            <p style="color: #FF4B4B; margin: 0; font-weight: 600; font-size: 0.85rem; word-break:keep-all;">
                 🚨 체육관과 운동장이 없으므로 탁구장, 헬스장, 당구 및 학년별 외부 체육 장소를 우선 가이드합니다.
             </p>
         </div>
     """, unsafe_allow_html=True)
 
 # ==========================================
-# 4. 🖤 메인 인터페이스 레이아웃 (수식어 없는 다크 테마)
+# 4. 👑 메인 인터페이스 레이아웃 (예전의 깔끔한 디자인)
 # ==========================================
 st.markdown("""
     <div class="title-section-container">
@@ -377,7 +352,7 @@ st.markdown("""
     </div>
 """, unsafe_allow_html=True)
 
-st.markdown("<hr style='border:1px solid #2d2d34;'>", unsafe_allow_html=True)
+st.markdown("---")
 
 if "messages" not in st.session_state:
     st.session_state.messages = [
