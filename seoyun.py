@@ -383,10 +383,11 @@ st.markdown("""
 
 st.markdown("---")
 
+# 📌 전교생을 아우르는 고급스럽고 단정한 안내 인사로 수정 완료
 if "messages" not in st.session_state:
     st.session_state.messages = [
         {"role": "assistant",
-         "content": "안녕! 완벽하게 디자인 보정된 서연중 챗봇이야. 궁금한 걸 아래 입력창에 편하게 물어봐! 📲"}
+         "content": "안녕하세요! 서연중학교 AI 안내 센터에 오신 것을 환영합니다. 오늘 학교 생활이나 학칙에 대해 어떤 도움이 필요하신가요? 🏫"}
     ]
 
 for msg in st.session_state.messages:
@@ -400,7 +401,7 @@ for msg in st.session_state.messages:
 # ==========================================
 # 6. 🤖 실시간 추론 제어 엔진 
 # ==========================================
-if user_input := st.chat_input("서연중 생활에 대해 질문해보세요..."):
+if user_input := st.chat_input("Gemini에 물어보기..."):
     with st.chat_message("user"):
         st.write(user_input)
     st.session_state.messages.append({"role": "user", "content": user_input})
