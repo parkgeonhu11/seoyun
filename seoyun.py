@@ -6,13 +6,13 @@ import csv
 import numpy as np
 
 # ==========================================
-# 1. 🌐 웹페이지 기본 구성 및 프리미엄 테마 정의
+# 1. 🌐 웹페이지 기본 구성 및 모바일 통합 테마 정의
 # ==========================================
 st.set_page_config(
-    page_title="Seoyeon Middle School AI Center",
-    page_icon="🤖",
+    page_title="서연중학교 AI 안내 센터",
+    page_icon="🏫",
     layout="wide",
-    initial_sidebar_state="collapsed" # 모바일 화면 확보를 위해 접힘 유지
+    initial_sidebar_state="collapsed"
 )
 
 # 🔑 OpenAI API 키 환경변수 보안 적용
@@ -24,70 +24,65 @@ except KeyError:
 
 client = OpenAI(api_key=MY_OPENAI_API_KEY)
 
-# 🎨 프리미엄 모바일 UI/UX 리디자인 (가로 스크롤 방지 및 버튼 크기 확장)
+# 🎨 아이폰/갤럭시 통합 크로스 브라우징 모바일 UI/UX 최적화
 st.markdown("""
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap');
 
-        /* 📱 모바일 화면 가로 스크롤 절대 방지 및 핵심 여백 최적화 */
-        html, body, [data-testid="stAppViewContainer"] {
+        /* 📱 아이폰(iOS Safari) & 갤럭시(Android Chrome) 공통 스크롤 방지 및 너비 고정 */
+        html, body, [data-testid="stAppViewContainer"], [data-testid="stHeader"] {
             max-width: 100vw !important;
             overflow-x: hidden !important;
+            box-sizing: border-box !important;
         }
         
         .block-container {
             padding-top: 1rem !important;
-            padding-bottom: 2rem !important;
-            padding-left: 0.5rem !important;
-            padding-right: 0.5rem !important;
+            padding-bottom: 3rem !important;
+            padding-left: 12px !important;
+            padding-right: 12px !important;
             max-width: 100% !important;
             box-sizing: border-box !important;
         }
 
-        /* 전역 폰트 미려하게 세팅 */
-        .stApp, .custom-wrap, .title-section-container, .premium-card {
+        /* 전역 폰트 지정 */
+        .stApp, .title-section-container, .premium-card {
             font-family: 'Noto Sans KR', sans-serif !important;
         }
 
-        /* ✨ 상단 메인 비주얼 배너 (모바일 폭 맞춤) */
+        /* ✨ 메인 비주얼 배너 (기기별 편차 최소화) */
         .title-section-container { 
-            padding: 20px 14px; 
-            border-radius: 16px; 
+            padding: 20px 16px; 
+            border-radius: 14px; 
             background: linear-gradient(135deg, #FFFAF6 0%, #FFF5F5 100%) !important;
             border: 1px solid #FFE3E3;
-            box-shadow: 0 8px 24px rgba(255, 107, 107, 0.07); 
             margin-bottom: 16px; 
             text-align: left; 
             width: 100%;
             box-sizing: border-box !important;
         }
         .title-text { 
-            background: linear-gradient(135deg, #FF4B4B, #FF7E40); 
-            -webkit-background-clip: text; 
-            -webkit-text-fill-color: transparent; 
-            font-size: 1.6rem !important; 
-            font-weight: 900 !important; 
+            color: #FF4B4B !important;
+            font-size: 1.5rem !important; 
+            font-weight: 800 !important; 
             margin: 0; 
-            letter-spacing: -1px; 
             line-height: 1.2;
         }
         .subtitle-text { 
             color: #666666 !important;
             font-size: 0.85rem !important; 
             font-weight: 500 !important; 
-            margin-top: 6px; 
+            margin-top: 4px; 
             margin-bottom: 0; 
-            word-break: keep-all; 
-            line-height: 1.4;
         }
 
-        /* 💎 세련된 인포메이션 보드 카드 */
+        /* 💎 안내 보드 카드 */
         .premium-card { 
-            padding: 16px 14px; 
+            padding: 16px; 
             background: #FFFFFF !important;
             border-radius: 14px; 
             border: 1px solid #EFEFEF; 
-            box-shadow: 0 6px 16px rgba(0,0,0,0.02); 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.02); 
             margin-bottom: 16px; 
             width: 100%;
             box-sizing: border-box !important;
@@ -96,8 +91,7 @@ st.markdown("""
             font-size: 1.0rem; 
             font-weight: 700; 
             color: #111111 !important;
-            margin-top: 0; 
-            margin-bottom: 10px; 
+            margin-bottom: 8px; 
             display: flex; 
             align-items: center; 
             gap: 6px; 
@@ -110,18 +104,17 @@ st.markdown("""
             word-break: keep-all;
         }
         
-        /* 📱 추천 태그 칩 모바일 가독성 업 */
+        /* 📱 예시 질문 칩 버튼화 및 터치 영역 확대 */
         .card-highlight { 
             color: #FF4B4B !important; 
             font-weight: 600; 
             background: #FFF0F0 !important;
-            padding: 6px 10px;
-            border-radius: 20px;
+            padding: 8px 12px;
+            border-radius: 18px;
             display: inline-block; 
             margin: 4px 2px;
             font-size: 0.8rem;
             border: 1px solid #FFE1E1;
-            box-shadow: 0 2px 5px rgba(255, 75, 75, 0.04);
         }
 
         .source-tag {
@@ -132,45 +125,48 @@ st.markdown("""
             font-size: 0.72rem; 
             font-weight: 600;
             display: inline-block;
-            border: 1px solid #E9ECEF;
         }
 
-        /* 🔘 모바일용 거대하고 누르기 쉬운 버튼 커스텀 스타일 정의 */
-        div[data-testid="stSidebar"] button, div.stButton > button {
+        /* 🔘 기기 불문 무조건 크고 누르기 쉽게 패딩 확장 (아이폰/갤럭시 공통 적용) */
+        div.stButton > button, div[data-testid="stSidebar"] button {
             width: 100% !important;
-            padding: 12px 20px !important;
-            font-size: 1rem !important;
+            padding: 14px 20px !important;
+            font-size: 1.05rem !important;
             font-weight: 700 !important;
-            min-height: 48px !important; /* 모바일 터치 최소 규격 확보 */
+            min-height: 54px !important; /* 모바일 터치 미스 방지 */
             border-radius: 12px !important;
+            box-sizing: border-box !important;
         }
 
-        /* 사이드바 커스텀 포인트 */
+        /* 💬 하단 입력창(stChatInput) 영역 아이폰/갤럭시 왜곡 차단 및 크기 최적화 */
+        div[data-testid="stChatInput"] textarea {
+            min-height: 52px !important;
+            font-size: 1rem !important;
+            padding: 12px !important;
+        }
+
         .sidebar-custom-box {
             background: linear-gradient(135deg, #FFF0F0 0%, #FFE3E3 100%) !important; 
             border-radius: 12px; 
             padding: 12px; 
             border: 1px solid #FFAFAF; 
-            margin-bottom: 12px;
         }
 
-        /* 🖥️ 데스크톱 환경 반응형 대응 */
+        /* 🖥️ PC 환경 해상도 대응 */
         @media (min-width: 768px) {
-            .block-container { padding: 2.5rem 6rem !important; }
-            .title-section-container { padding: 32px 40px; border-radius: 24px; text-align: center; }
-            .title-text { font-size: 2.8rem !important; }
-            .subtitle-text { font-size: 1.1rem !important; margin-top: 10px; }
-            .premium-card { padding: 24px 32px; border-radius: 20px; }
-            .card-title { font-size: 1.25rem; }
-            .card-content { font-size: 0.95rem; }
-            .card-highlight { padding: 5px 12px; margin: 0 4px; display: inline-block; }
+            .block-container { padding: 2rem 5rem !important; }
+            .title-section-container { padding: 24px 32px; text-align: center; }
+            .title-text { font-size: 2.2rem !important; }
+            .subtitle-text { font-size: 1rem !important; }
+            .premium-card { padding: 20px 24px; }
+            .card-highlight { padding: 6px 12px; margin: 0 4px; }
         }
     </style>
 """, unsafe_allow_html=True)
 
 
 # ==========================================
-# 2. 📂 영속성 데이터 허브 및 로컬 캐싱 RAG 엔진
+# 2. 📂 데이터 로드 및 RAG 엔진
 # ==========================================
 @st.cache_resource
 def DEEP_INITIALIZE_RAG_ENGINE():
@@ -269,7 +265,7 @@ def DEEP_INITIALIZE_RAG_ENGINE():
 try:
     ALL_CHUNKS, EMBEDDING_MATRIX = DEEP_INITIALIZE_RAG_ENGINE()
 except Exception as e:
-    st.error(f"데이터 파일 처리 오류: {e}")
+    st.error(f"데이터 로드 오류: {e}")
     st.stop()
 
 
@@ -302,67 +298,29 @@ def save_unknown_question_csv(question):
 
 
 # ==========================================
-# 3. 📊 검증 데이터 셋
-# ==========================================
-TEST_SUITE = [
-    {"q": "지각 사유 아플때 인정 돼?", "target": "지각 처리 인정 기준"},
-    {"q": "사복 금지 규정 알려줘", "target": "복장 규정"},
-    {"q": "두발 규정 튀면 안돼?", "target": "두발 규정"},
-    {"q": "화장품 발라도 됨?", "target": "교내 화장"},
-    {"q": "아이패드 아침에 안걷어?", "target": "아이패드 노트북 태블릿"},
-    {"q": "자전거 킥보드 안전장비 안하면?", "target": "전동 킥보드 자전거 등교"},
-    {"q": "위클래스 3층에 있어?", "target": "Wee클래스 상담실"},
-    {"q": "보건실 어디있어?", "target": "보건실 이용 및 위치"},
-    {"q": "강당이랑 운동장 어딨어?", "target": "체육관 강당 운동장 없음"},
-    {"q": "학생회실 문 열려있어?", "target": "학생회실 위치 및 규칙"},
-    {"q": "급식 몇반 순서대로 먹어?", "target": "급식 배식 순서 학년 반별"},
-    {"q": "새치기하면 맨뒤로 가?", "target": "급식실 새치기 규정"},
-    {"q": "목요일 동아리 전일제가 뭐야?", "target": "동아리 활동 전일제"},
-    {"q": "방송부 중간에 바꿀수있어?", "target": "동아리 신청 및 상설 동아리"},
-    {"q": "방과후 수업 언제 시작해?", "target": "방과후 학교"}
-]
-
-# ==========================================
-# 4. 📱 사이드바 대시보드 컨트롤
+# 3. 📱 사이드바 메뉴
 # ==========================================
 with st.sidebar:
-    st.markdown("## 🏫 Seoyeon UI Pro v3")
-    st.caption("전교 부회장 기획 프레임워크 최적화")
+    st.markdown("## 🏫 서연중 AI 가이드")
+    st.caption("학생 지원 대시보드")
     st.markdown("---")
-    st.success("🔒 실시간 피드백 보정 가동중")
-
-    st.markdown("### 🧪 RAG 정밀 스코어")
-    if st.button("신규 규정 15셋 무결성 채점"):
-        progress_bar = st.progress(0)
-        success_count = 0
-
-        for idx, item in enumerate(TEST_SUITE):
-            _, chunk_list = retrieve_relevant_context_openai(item["q"], ALL_CHUNKS, EMBEDDING_MATRIX, top_n=1)
-            if chunk_list and item["target"] in chunk_list[0]:
-                success_count += 1
-            progress_bar.progress((idx + 1) / len(TEST_SUITE))
-
-        st.metric(label="의미 정합도 매칭률", value=f"{success_count} / {len(TEST_SUITE)}",
-                  delta=f"{int(success_count / len(TEST_SUITE) * 100)}%")
-        progress_bar.empty()
-
-    st.markdown("---")
-    st.markdown("#### 📱 레이아웃 안내")
+    
+    st.markdown("#### 안내사항")
     st.markdown("""
         <div class="sidebar-custom-box">
             <p style="color: #FF4B4B; margin: 0; font-weight: 600; font-size: 0.85rem; word-break:keep-all;">
-                🚨 체육관/운동장이 없으므로 교내 탁구장, 헬스장, 당구 시설 및 외부 활동 장소를 상세히 가이드합니다.
+                🚨 체육관과 운동장이 없으므로 탁구장, 헬스장, 당구 및 학년별 외부 체육 장소를 우선 가이드합니다.
             </p>
         </div>
     """, unsafe_allow_html=True)
 
 # ==========================================
-# 5. 👑 메인 가이드 인터페이스 레이아웃
+# 4. 👑 메인 인터페이스 레이아웃 (과한 수식어 제거)
 # ==========================================
 st.markdown("""
     <div class="title-section-container">
-        <h1 class="title-text">서연중학교 챗봇 AI</h1>
-        <p class="subtitle-text">✨ 전교 부회장 기획 운영 | 모바일 최적화 고화질 프리미엄 RAG</p>
+        <h1 class="title-text">서연중학교 AI 안내 센터</h1>
+        <p class="subtitle-text">우리 학교의 다양한 학칙 규정과 급식 일정을 안내합니다.</p>
     </div>
 """, unsafe_allow_html=True)
 
@@ -370,10 +328,10 @@ st.markdown("""
     <div class="premium-card">
         <div class="card-title">
             <img src="https://img.icons8.com/fluency/48/sparkles.png" width="22" height="22"/>
-            학교 생활 백과사전
+            자주 묻는 질문 예시
         </div>
         <p class="card-content">
-            새롭게 패치된 서연중의 학칙과 7월 급식 일정을 한눈에 간편하게 모아보세요.<br><br>
+            궁금한 점을 아래 입력창에 검색하거나 참고해 보세요.<br><br>
             <span class="card-highlight">🍱 반별 급식 순서가 어떻게 돼?</span> 
             <span class="card-highlight">🏓 체육관 없는데 체육 어디서 해?</span> 
             <span class="card-highlight">🎸 동아리 전일제에는 뭐해?</span>
@@ -383,7 +341,7 @@ st.markdown("""
 
 st.markdown("---")
 
-# 📌 전교생을 아우르는 고급스럽고 단정한 안내 인사로 수정 완료
+# 기본 첫 시작 웰컴 메시지
 if "messages" not in st.session_state:
     st.session_state.messages = [
         {"role": "assistant",
@@ -394,13 +352,14 @@ for msg in st.session_state.messages:
     with st.chat_message(msg["role"]):
         st.write(msg["content"])
         if "contexts" in msg and msg["contexts"]:
-            with st.expander("🔍 매칭 학칙 컨텍스트"):
+            with st.expander("🔍 관련 규정 근거"):
                 for source in msg["contexts"]:
                     st.caption(source)
 
 # ==========================================
-# 6. 🤖 실시간 추론 제어 엔진 
+# 5. 🤖 실시간 대화 추론 엔진
 # ==========================================
+# 모바일에서 더 누르기 편하게 확장된 기본 채팅창 플레이스홀더
 if user_input := st.chat_input("Gemini에 물어보기..."):
     with st.chat_message("user"):
         st.write(user_input)
@@ -439,16 +398,16 @@ if user_input := st.chat_input("Gemini에 물어보기..."):
                                                                                top_n=3)
 
             SYSTEM_PROMPT = f"""
-            당신은 서연중학교 학생들을 위한 친근한 전교 부회장 '학교생활 가이드 AI'입니다.
-            - 오늘의 학사 시점 기준: {realtime_today}
+            당신은 서연중학교 학생들을 위한 친근한 학교생활 가이드 AI입니다.
+            - 오늘 기준 날짜: {realtime_today}
 
-            [임베딩 정밀 검색 컨텍스트 데이터베이스]
-            {DYNAMIC_CONTEXT if DYNAMIC_CONTEXT else "사용자 질의와 정합되는 학교 공식 규정 조각이 없습니다."}
+            [학교 공식 규정 데이터베이스]
+            {DYNAMIC_CONTEXT if DYNAMIC_CONTEXT else "사용자 질의와 일치하는 공식 규정이 없습니다."}
 
-            [답변 수립 엄격 규칙]
-            1. 사용자가 제공해준 데이터베이스 내용에 기반해서만 대답하고 절대 혼자 상상해서 지여내지 마세요.
-            2. 학칙이나 위치 등 근거가 명확하지 않거나 데이터가 없는 모호한 질문의 경우, 학생들에게 거짓 정보를 주지 않도록 문장 가장 끝부분에 "[확인 필요]"를 정확하게 적어주세요.
-            3. 스마트폰 작은 화면에서 한눈에 쏙 들어오도록 불필요한 서론은 빼고, 줄바꿈을 예쁘게 조합하여 최대 3줄~4줄 이내로 핵심만 요약해서 든든한 선배처럼 반말로 대답하세요.
+            [답변 규칙]
+            1. 제공된 데이터베이스 내용에 기반해서만 대답하고 거짓 내용을 지어내지 마세요.
+            2. 학칙이나 위치 등 데이터가 없어 모호한 질문의 경우, 문장 가장 끝부분에 "[확인 필요]"를 정확하게 적어주세요.
+            3. 스마트폰 화면에서 읽기 편하게 불필요한 인사는 빼고, 줄바꿈을 조합하여 최대 3~4줄 이내로 핵심만 요약해서 친구처럼 반말로 대답하세요.
             """
 
             api_messages = [{"role": "system", "content": SYSTEM_PROMPT}]
@@ -477,20 +436,12 @@ if user_input := st.chat_input("Gemini에 물어보기..."):
                 cleaned_display_response = full_response.replace("[확인 필요]", "").strip()
                 response_container.write(cleaned_display_response)
 
-                with st.expander("🔍 매칭 규정 레이어"):
+                with st.expander("🔍 매칭 규정 확인"):
                     if matched_chunks:
                         for idx, source in enumerate(matched_chunks):
-                            st.caption(f"**매칭 {idx + 1}:** {source}")
+                            st.caption(f"**규정 {idx + 1}:** {source}")
                     else:
-                        st.caption("⚠️ 가이드라인 매칭 조건 미달 기본 추론 연산 수행.")
-
-        st.markdown("""
-            <div style="text-align: right; margin-top: 5px;">
-                <span class="source-tag">
-                    🎯 Premium Redesign & Mobile Optimized Verified
-                </span>
-            </div>
-        """, unsafe_allow_html=True)
+                        st.caption("데이터베이스에 매칭된 내용이 없습니다.")
 
         st.session_state.messages.append({
             "role": "assistant",
@@ -500,7 +451,7 @@ if user_input := st.chat_input("Gemini에 물어보기..."):
 
         if "[확인 필요]" in full_response:
             save_unknown_question_csv(user_input)
-            st.toast("💾 세부 조회가 필요한 질문은 unknown_questions.csv에 보관했어!", icon="💡")
+            st.toast("💾 추가 검토가 필요한 질문은 보관함에 기록되었습니다.", icon="💡")
 
     except Exception as e:
-        st.error(f"추론 모듈 예외 발생: {e}")
+        st.error(f"오류가 발생했습니다: {e}")
