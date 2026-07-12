@@ -1,6 +1,6 @@
 import streamlit as st
 from openai import OpenAI
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 import os
 import csv
 import numpy as np
@@ -59,7 +59,7 @@ st.markdown("""
             font-family: 'Noto Sans KR', sans-serif !important;
         }
 
-        /* ✨ 예전의 시그니처 상단 메인 비주얼 배너 레이아웃 */
+        /* ✨ 상단 메인 비주얼 배너 레이아웃 */
         .title-section-container { 
             padding: 22px 16px; 
             border-radius: 16px; 
@@ -91,7 +91,7 @@ st.markdown("""
             line-height: 1.4;
         }
 
-        /* 💎 예전 인포메이션 보드 카드 레이아웃 */
+        /* 💎 인포메이션 보드 카드 레이아웃 */
         .premium-card { 
             padding: 18px 16px; 
             background: #FFFFFF !important;
@@ -120,7 +120,7 @@ st.markdown("""
             word-break: keep-all;
         }
         
-        /* 📱 추천 질문 태그 칩 스타일 및 터치 영역 */
+        /* 📱 추천 질문 태그 칩 스타일 */
         .card-highlight { 
             color: #FF4B4B !important; 
             font-weight: 600; 
@@ -134,7 +134,7 @@ st.markdown("""
             touch-action: manipulation;
         }
 
-        /* 🔘 일반 버튼 스타일 최적화 (지나치게 거대해지지 않도록 수정) */
+        /* 🔘 버튼 스타일 최적화 */
         div.stButton > button, div[data-testid="stSidebar"] button {
             width: 100% !important;
             padding: 10px 16px !important;
@@ -145,7 +145,7 @@ st.markdown("""
             touch-action: manipulation !important;
         }
 
-        /* 💬 [개선] 핸드폰에서 거대해 보이던 채팅 입력창 높이 및 크기 정밀 제어 */
+        /* 💬 채팅 입력창 높이 및 크기 제어 */
         div[data-testid="stChatInput"] {
             padding: 0px !important;
         }
@@ -165,7 +165,6 @@ st.markdown("""
             border: 1px solid #FFAFAF; 
         }
 
-        /* 🖥️ PC/데스크톱 반응형 밸런스 유지 */
         @media (min-width: 768px) {
             .block-container { padding: 2rem 5rem !important; }
             .title-section-container { padding: 26px 32px; text-align: center; }
@@ -218,7 +217,7 @@ def DEEP_INITIALIZE_RAG_ENGINE():
             ["보건실 이용 및 위치", "보건실은 본관 2층에 위치해 있습니다. 수업 시간이든 쉬는 시간이든, 점심시간이든 몸이 아프다면 언제든지 방문하여 이용할 수 있습니다. 안정을 취하는 구체적인 최대 시간 제한은 유연하게 운영될 수 있습니다."],
             ["체육관 강당 운동장 없음", "현재 우리 학교에는 체육관(강당)이 존재하지 않으며, 운동장 또한 따로 마련되어 있지 않습니다. 따라서 체육 활동을 할 때에는 교내에 있는 탁구장, 헬스장, 당구 시설을 주로 이용합니다. 학년별 외부 체육 활동의 경우 1학년은 배드민턴을 치러 가고, 2학년은 외부 볼링장으로 이동하며, 3학년은 농구장을 이용하여 수업을 진행합니다."],
             ["학생회실 위치 및 규칙", "전교 학생회실은 본관 3층에 위치해 있습니다. 학생회실 내부에 학생회 임원 인원들이 없을 때에는 기본적으로 문이 잠겨 있으므로, 상시 개방되어 있거나 언제든 마음대로 방문할 수 있는 구조는 아닙니다."],
-            ["급식 배식 순서 학년 반별", "안전하고 질서 있는 급식을 위해 기본 학년별 순서는 3학년 -> 2학년 -> 1학년 순서로 배식합니다. 다만, 각 학년 내에 속한 반(1반, 2반, 3반, 4반, 5반, 6반 등)의 세부 진입 순서는 공평성을 위해 매달 학교에서 정해주는 로테이션 스케줄에 맞춰 순서대로 배식을 받게 됩니다."],
+            ["급식 배식 순서 학년 반별", "안전하고 질서 있는 급식을 위해 기본 학년별 순서는 3학년 -> 2학년 -> 1학년 순서로 배식합니다. 다만, 각 학년 내에 속한 반(1반, 2반, 3반, 4반, 5반 등)의 세부 진입 순서는 공평성을 위해 매달 학교에서 정해주는 로테이션 스케줄에 맞춰 순서대로 배식을 받게 됩니다."],
             ["주말 급식 운영 여부", "주말(토요일, 일요일) 급식 운영 여부에 대해서는 정확히 명시되거나 확인된 바가 없으므로 주말 학사일정이나 학교 공식 공지사항 확인이 따로 필요합니다."],
             ["급식실 새치기 규정", "급식실 내에서 줄을 서는 도중 새치기를 하거나 일행을 끼워주는 행위는 엄격히 금지됩니다. 적발 시 선생님께 크게 혼나는 것은 물론이며, 불이익으로 줄의 가장 맨 뒤쪽 끝으로 밀려나서 배식을 늦게 받아야 할 수 있습니다."],
             ["동아리 활동 전일제", "동아리 활동은 목요일에 진행됩니다. 가끔씩 '전일제 동아리'라고 해서 1교시부터 7교시까지 하루 종일 동아리 활동만 하는 날이 있습니다. 이런 날에는 동아리 내에서 부원들끼리 의견을 모아 하고 싶은 활동을 직접 정해서 자유롭게 진행할 수 있습니다. 또한 상황에 따라 5교시부터 7교시까지만 압축적으로 동아리 활동을 진행하는 날도 존재합니다."],
@@ -328,7 +327,7 @@ with st.sidebar:
     """, unsafe_allow_html=True)
 
 # ==========================================
-# 4. 👑 메인 인터페이스 레이아웃 (예전의 깔끔한 디자인)
+# 4. 👑 메인 인터페이스 레이아웃
 # ==========================================
 st.markdown("""
     <div class="title-section-container">
@@ -347,7 +346,7 @@ st.markdown("""
             궁금한 점을 아래 입력창에 검색하거나 참고해 보세요.<br><br>
             <span class="card-highlight">🍱 반별 급식 순서가 어떻게 돼?</span> 
             <span class="card-highlight">🏓 체육관 없는데 체육 어디서 해?</span> 
-            <span class="card-highlight">🎸 동아리 전일제에는 뭐해?</span>
+            <span class="card-highlight">🏃 오늘 하교 시간 언제야?</span>
         </p>
     </div>
 """, unsafe_allow_html=True)
@@ -369,7 +368,7 @@ for msg in st.session_state.messages:
                     st.caption(source)
 
 # ==========================================
-# 5. 🤖 실시간 대화 추론 엔진 (하교 시간 및 예외 처리 완벽 결합)
+# 5. 🤖 실시간 대화 추론 엔진 (정밀 학사일정 및 하교 예외 처리 결합)
 # ==========================================
 if user_input := st.chat_input("Gemini에 물어보기..."):
     with st.chat_message("user"):
@@ -382,8 +381,8 @@ if user_input := st.chat_input("Gemini에 물어보기..."):
         weekday_map = {0: "월요일", 1: "화요일", 2: "수요일", 3: "목요일", 4: "금요일", 5: "토요일", 6: "일요일"}
         realtime_today = f"{now.strftime('%Y년 %m월 %d일')} {weekday_map[now.weekday()]}"
 
-        # 🔍 2. 하교 시간 관련 질의 및 특정 날짜 키워드 감지
-        is_asking_dismissal = any(keyword in user_input for keyword in ["하교", "끝나", "몇시에", "집에가"])
+        # 🔍 2. 하교 시간 및 급식 질의 판별 키워드 감지
+        is_asking_dismissal = any(keyword in user_input for keyword in ["하교", "끝나", "몇시에", "집에가", "끝나는"])
         is_asking_lunch = any(keyword in user_input for keyword in ["급식", "식단", "메뉴", "밥", "먹어"])
         
         target_date = now
@@ -402,29 +401,98 @@ if user_input := st.chat_input("Gemini에 물어보기..."):
             target_date = now - timedelta(days=1)
             is_asking_specific_day = True
 
-        # 🛑 예외 예측 레이어 A: 주말(토/일) 급식 예외 필터링
-        if is_asking_lunch and is_asking_specific_day and target_date.weekday() in [5, 6]:
+        target_date_only = target_date.date()
+
+        # 📅 [2026-2027 학사일정 데이터 세트 정의]
+        CLUB_DAYS = {date(2026, 8, 27), date(2026, 9, 17), date(2026, 10, 22)}
+        NEXT_CLUB_DAYS = {day + timedelta(weeks=1) for day in CLUB_DAYS}  # 동아리 다음 주 목요일 데이터 연산 자동화
+
+        # 🛑 쉬는 날 (휴업일 / 공공 공휴일)
+        HOLIDAYS = {
+            date(2026, 10, 5),   # 대체공휴일
+            date(2026, 10, 9),   # 한글날
+            date(2026, 11, 19),  # 수능 재량휴업일
+            date(2026, 11, 20),  # 재량휴업일
+            date(2026, 12, 25),  # 성탄절
+            date(2027, 1, 1)     # 신정
+        }
+        
+        # 📝 특수 일정 (일과 변동 발생)
+        SPECIAL_SCHEDULES = {
+            date(2026, 8, 19): "오늘은 개학식 날이야! 오랜만에 학교 오느라 고생 많았어.",
+            date(2026, 10, 7): "오늘은 금요일 시간표로 수업을 변경해서 진행하는 날이야! 시간표 헷갈리지 않게 조심해.",
+            date(2026, 10, 20): "지필평가(중간/기말) 기간이야! 시험 끝나고 바로 하교하니까 일정 참고해.",
+            date(2026, 10, 21): "지필평가(중간/기말) 기간이야! 시험 끝나고 바로 하교하니까 일정 참고해.",
+            date(2026, 12, 14): "1,2학년 기말고사 시험 기간이야! 시험 일정 끝나고 바로 하교해.",
+            date(2026, 12, 15): "1,2학년 기말고사 시험 기간이야! 시험 일정 끝나고 바로 하교해.",
+            date(2026, 12, 30): "오늘은 우리 학교 축제인 '서연제'가 열리는 날이야! 신나게 즐기자 🎉",
+            date(2027, 1, 4): "오늘은 차기 학생회장 선거가 진행되는 날이야! 소중한 한 표 행사하자 🗳️",
+            date(2027, 1, 8): "오늘 드디어 2학기 종업식날이야! 한 학기 동안 정말 수고 많았어. 🥳"
+        }
+
+        # 🛑 예외 예측 레이어 A: 주말 및 공휴일/방학 급식 필터링
+        is_vacation = date(2026, 7, 22) <= target_date_only <= date(2026, 8, 18)
+        is_chuseok = date(2026, 9, 24) <= target_date_only <= date(2026, 9, 27)
+        
+        if is_asking_lunch and is_asking_specific_day:
             with st.chat_message("assistant"):
-                full_response = f"질문한 날짜({target_date.strftime('%m월 %d일')} {weekday_map[target_date.weekday()]})는 주말이라 급식이 없어! 주말 일정표를 다시 확인해줘. ☀️"
-                st.write(full_response)
-                st.session_state.messages.append({"role": "assistant", "content": full_response, "contexts": ["주말 예외 필터 레이어"]})
-                
-        # 🕒 예외 예측 레이어 B: 하교 시간 질문에 대한 요일별 알고리즘 분기
-        elif is_asking_dismissal and is_asking_specific_day:
+                if target_date.weekday() in [5, 6]:
+                    full_response = f"질문한 날짜({target_date.strftime('%m월 %d일')})는 주말이라 급식이 없어! 주말엔 맛있는 거 챙겨 먹어. ☀️"
+                elif is_vacation:
+                    full_response = f"질문한 날짜는 즐거운 여름방학 기간(7/22 ~ 8/18)이라 학교 급식이 운영되지 않아! 🏖️"
+                elif is_chuseok:
+                    full_response = f"질문한 날짜는 즐거운 추석 연휴라 학교 급식이 없어! 맛있는 명절 명절 음식 많이 먹어. 🌾"
+                elif target_date_only in HOLIDAYS:
+                    full_response = f"질문한 날짜({target_date.strftime('%m월 %d일')})는 학교가 쉬는 공휴일/휴업일이라 급식이 제공되지 않아!"
+                elif target_date_only == date(2026, 7, 17):
+                    full_response = "7월 17일은 제헌절로 인한 휴업일이라 급식이 제공되지 않아!"
+                elif target_date_only == date(2026, 7, 21):
+                    full_response = "7월 21일은 신나는 방학식 날이라서 급식이 제공되지 않아!"
+                else:
+                    is_asking_lunch = False  # 일반 급식 처리 RAG 연계 처리로 넘김
+
+                if 'full_response' in locals():
+                    st.write(full_response)
+                    st.session_state.messages.append({"role": "assistant", "content": full_response, "contexts": ["학사일정 급식 예외 필터"]})
+                    st.stop()
+
+        # 🕒 예외 예측 레이어 B: 하교 시간에 대한 정밀 알고리즘 엔진
+        if is_asking_dismissal and is_asking_specific_day:
             with st.chat_message("assistant"):
                 target_weekday = target_date.weekday()
                 
-                if target_weekday == 1:  # 화요일
-                    full_response = f"질문한 {weekday_map[target_weekday]}은 무조건 7교시 수업을 진행하니까 오후 4시에 하교해! 🏫"
-                elif target_weekday == 3:  # 목요일
-                    full_response = f"목요일은 기본적으로 6교시(오후 3시)에 끝나지만, 만약 동아리 활동이 있거나 동아리 활동 다음 주 목요일이라면 7교시라 오후 4시에 하교하게 돼! 일정을 꼭 확인해봐. 🎸"
-                elif target_weekday in [5, 6]:  # 주말
-                    full_response = f"질문한 날짜는 주말({weekday_map[target_weekday]})이야! 학교에 안 가는 날이니까 하교 시간도 없어. 집에서 푹 쉬어! 🛌"
-                else:  # 월, 수, 금
-                    full_response = f"질문한 {weekday_map[target_weekday]}은 6교시 수업을 진행하니까 오후 3시에 하교해! 🏃"
+                # 1단계: 학교 안 가는 날 (주말, 방학, 추석, 지정 공휴일) 먼저 처리
+                if target_weekday in [5, 6]:
+                    full_response = "질문한 날짜는 주말이야! 학교에 안 가니까 하교 시간도 따로 없어. 🛌"
+                elif is_vacation:
+                    full_response = "해당 기간(7/22 ~ 8/18)은 여름방학 기간이야! 학교에 등교하지 않으니 푹 쉬어. 🏖️"
+                elif is_chuseok:
+                    full_response = "해당 기간(9/24 ~ 9/27)은 추석 연휴라서 학교에 안 가! 가족들과 즐거운 명절 보내. 🌾"
+                elif target_date_only in HOLIDAYS:
+                    full_response = f"질문한 {target_date.strftime('%m월 %d일')}은 학교가 쉬는 날(공휴일/재량휴업일)이라 하교 시간이 없어! 🎈"
+                
+                # 2단계: 특수 일정이 있는 날 안내
+                elif target_date_only in SPECIAL_SCHEDULES:
+                    full_response = SPECIAL_SCHEDULES[target_date_only]
+                
+                # 3단계: 정규 요일별 하교 시간 로직 전개
+                else:
+                    if target_weekday == 1:  # 화요일 무조건 7교시
+                        full_response = f"질문한 {weekday_map[target_weekday]}은 정규 7교시 수업을 진행하니까 **오후 4시**에 하교해! 🏫"
+                    
+                    elif target_weekday == 3:  # 목요일 정밀 연산 알고리즘
+                        if target_date_only in CLUB_DAYS:
+                            full_response = f"질문한 목요일({target_date.strftime('%m월 %d일')})은 **동아리 활동이 있는 날**이라 7교시로 진행되어 **오후 4시**에 하교해! 🎸"
+                        elif target_date_only in NEXT_CLUB_DAYS:
+                            full_response = f"질문한 목요일({target_date.strftime('%m월 %d일')})은 **동아리 활동을 진행했던 다음 주 목요일**이라 한 교시가 더 추가된 7교시(보충/연장)로 운영되어 **오후 4시**에 하교하게 돼! ✍️"
+                        else:
+                            full_response = f"일반적인 목요일({target_date.strftime('%m월 %d일')})은 6교시 수업이라 **오후 3시**에 하교해! 🏃"
+                    
+                    else:  # 월, 수, 금 일반 6교시
+                        full_response = f"질문한 {weekday_map[target_weekday]}은 정규 6교시 수업을 진행하니까 **오후 3시**에 하교해! 🏃"
                 
                 st.write(full_response)
-                st.session_state.messages.append({"role": "assistant", "content": full_response, "contexts": ["실시간 요일 판별 알고리즘 레이어"]})
+                st.session_state.messages.append({"role": "assistant", "content": full_response, "contexts": ["실시간 정밀 하교 예측 알고리즘"]})
 
         # 🧠 3. 일반적인 학칙 및 RAG 질문 처리 단계 (벡터 유사도 연산 연동)
         else:
