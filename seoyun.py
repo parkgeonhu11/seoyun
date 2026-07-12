@@ -369,7 +369,7 @@ for msg in st.session_state.messages:
                     st.caption(source)
 
 # ==========================================
-# 5. 🤖 실시간 대화 추론 엔진
+# 5. 🤖 실시간 대화 추론 엔진 (하교 시간 및 예외 처리 완벽 결합)
 # ==========================================
 if user_input := st.chat_input("Gemini에 물어보기..."):
     with st.chat_message("user"):
@@ -377,11 +377,15 @@ if user_input := st.chat_input("Gemini에 물어보기..."):
     st.session_state.messages.append({"role": "user", "content": user_input})
 
     try:
+        # 🗓️ 1. 실시간 시간 데이터 판별 및 요일 매핑
         now = datetime.now()
         weekday_map = {0: "월요일", 1: "화요일", 2: "수요일", 3: "목요일", 4: "금요일", 5: "토요일", 6: "일요일"}
         realtime_today = f"{now.strftime('%Y년 %m월 %d일')} {weekday_map[now.weekday()]}"
 
+        # 🔍 2. 하교 시간 관련 질의 및 특정 날짜 키워드 감지
+        is_asking_dismissal = any(keyword in user_input for keyword in ["하교", "끝나", "몇시에", "집에가"])
         is_asking_lunch = any(keyword in user_input for keyword in ["급식", "식단", "메뉴", "밥", "먹어"])
+        
         target_date = now
         is_asking_specific_day = False
 
@@ -398,15 +402,33 @@ if user_input := st.chat_input("Gemini에 물어보기..."):
             target_date = now - timedelta(days=1)
             is_asking_specific_day = True
 
+        # 🛑 예외 예측 레이어 A: 주말(토/일) 급식 예외 필터링
         if is_asking_lunch and is_asking_specific_day and target_date.weekday() in [5, 6]:
             with st.chat_message("assistant"):
                 full_response = f"질문한 날짜({target_date.strftime('%m월 %d일')} {weekday_map[target_date.weekday()]})는 주말이라 급식이 없어! 주말 일정표를 다시 확인해줘. ☀️"
                 st.write(full_response)
-                st.session_state.messages.append(
-                    {"role": "assistant", "content": full_response, "contexts": ["주말 예외 필터 레이어"]})
+                st.session_state.messages.append({"role": "assistant", "content": full_response, "contexts": ["주말 예외 필터 레이어"]})
+                
+        # 🕒 예외 예측 레이어 B: 하교 시간 질문에 대한 요일별 알고리즘 분기
+        elif is_asking_dismissal and is_asking_specific_day:
+            with st.chat_message("assistant"):
+                target_weekday = target_date.weekday()
+                
+                if target_weekday == 1:  # 화요일
+                    full_response = f"질문한 {weekday_map[target_weekday]}은 무조건 7교시 수업을 진행하니까 오후 4시에 하교해! 🏫"
+                elif target_weekday == 3:  # 목요일
+                    full_response = f"목요일은 기본적으로 6교시(오후 3시)에 끝나지만, 만약 동아리 활동이 있거나 동아리 활동 다음 주 목요일이라면 7교시라 오후 4시에 하교하게 돼! 일정을 꼭 확인해봐. 🎸"
+                elif target_weekday in [5, 6]:  # 주말
+                    full_response = f"질문한 날짜는 주말({weekday_map[target_weekday]})이야! 학교에 안 가는 날이니까 하교 시간도 없어. 집에서 푹 쉬어! 🛌"
+                else:  # 월, 수, 금
+                    full_response = f"질문한 {weekday_map[target_weekday]}은 6교시 수업을 진행하니까 오후 3시에 하교해! 🏃"
+                
+                st.write(full_response)
+                st.session_state.messages.append({"role": "assistant", "content": full_response, "contexts": ["실시간 요일 판별 알고리즘 레이어"]})
+
+        # 🧠 3. 일반적인 학칙 및 RAG 질문 처리 단계 (벡터 유사도 연산 연동)
         else:
-            DYNAMIC_CONTEXT, matched_chunks = retrieve_relevant_context_openai(user_input, ALL_CHUNKS, EMBEDDING_MATRIX,
-                                                                               top_n=3)
+            DYNAMIC_CONTEXT, matched_chunks = retrieve_relevant_context_openai(user_input, ALL_CHUNKS, EMBEDDING_MATRIX, top_n=3)
 
             SYSTEM_PROMPT = f"""
             당신은 서연중학교 학생들을 위한 친근한 학교생활 가이드 AI입니다.
@@ -454,15 +476,15 @@ if user_input := st.chat_input("Gemini에 물어보기..."):
                     else:
                         st.caption("데이터베이스에 매칭된 내용이 없습니다.")
 
-        st.session_state.messages.append({
-            "role": "assistant",
-            "content": cleaned_display_response,
-            "contexts": matched_chunks if 'matched_chunks' in locals() else []
-        })
+            st.session_state.messages.append({
+                "role": "assistant",
+                "content": cleaned_display_response,
+                "contexts": matched_chunks if 'matched_chunks' in locals() else []
+            })
 
-        if "[확인 필요]" in full_response:
-            save_unknown_question_csv(user_input)
-            st.toast("💾 추가 검토가 필요한 질문은 보관함에 기록되었습니다.", icon="💡")
+            if "[확인 필요]" in full_response:
+                save_unknown_question_csv(user_input)
+                st.toast("💾 추가 검토가 필요한 질문은 보관함에 기록되었습니다.", icon="💡")
 
     except Exception as e:
         st.error(f"오류가 발생했습니다: {e}")
