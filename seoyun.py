@@ -24,7 +24,7 @@ except KeyError:
 
 client = OpenAI(api_key=MY_OPENAI_API_KEY)
 
-# 🎨 예전의 깔끔한 레이아웃 복구 + 모바일 입력창 크기 최적화
+# 🎨 레이아웃 미세 조정 (여백 완화 및 피드백 반영 레이어 디자인)
 st.markdown("""
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap');
@@ -46,10 +46,10 @@ st.markdown("""
         }
 
         .block-container {
-            padding-top: 1rem !important;
+            padding-top: 1.5rem !important; /* 위쪽 여백 살짝 확보 */
             padding-bottom: 3rem !important;
-            padding-left: 14px !important;
-            padding-right: 14px !important;
+            padding-left: 16px !important;
+            padding-right: 16px !important;
             max-width: 100% !important;
             box-sizing: border-box !important;
         }
@@ -59,78 +59,78 @@ st.markdown("""
             font-family: 'Noto Sans KR', sans-serif !important;
         }
 
-        /* ✨ 상단 메인 비주얼 배너 레이아웃 */
+        /* ✨ 상단 메인 비주얼 배너 (그라데이션 및 패딩 미세 조정) */
         .title-section-container { 
-            padding: 22px 16px; 
-            border-radius: 16px; 
-            background: linear-gradient(135deg, #FFFAF6 0%, #FFF5F5 100%) !important;
-            border: 1px solid #FFE3E3;
-            box-shadow: 0 8px 24px rgba(255, 107, 107, 0.05); 
-            margin-bottom: 16px; 
+            padding: 24px 20px; 
+            border-radius: 18px; 
+            background: linear-gradient(135deg, #FFFDFB 0%, #FFF3F3 100%) !important;
+            border: 1px solid #FFD8D8;
+            box-shadow: 0 6px 20px rgba(255, 107, 107, 0.04); 
+            margin-bottom: 20px; 
             text-align: left; 
             width: 100%;
             box-sizing: border-box !important;
         }
         .title-text { 
-            background: linear-gradient(135deg, #FF4B4B, #FF7E40); 
+            background: linear-gradient(135deg, #FF4B4B, #FF6B2B); 
             -webkit-background-clip: text; 
             -webkit-text-fill-color: transparent; 
-            font-size: 1.5rem !important; 
+            font-size: 1.6rem !important; 
             font-weight: 900 !important; 
             margin: 0; 
             letter-spacing: -1px; 
             line-height: 1.2;
         }
         .subtitle-text { 
-            color: #666666 !important;
-            font-size: 0.85rem !important; 
+            color: #555555 !important;
+            font-size: 0.88rem !important; 
             font-weight: 500 !important; 
-            margin-top: 6px; 
+            margin-top: 8px; 
             margin-bottom: 0; 
             word-break: keep-all; 
             line-height: 1.4;
         }
 
-        /* 💎 인포메이션 보드 카드 레이아웃 */
+        /* 💎 인포메이션 보드 카드 레이아웃 테두리 및 라운드 조정 */
         .premium-card { 
-            padding: 18px 16px; 
+            padding: 20px 18px; 
             background: #FFFFFF !important;
-            border-radius: 14px; 
-            border: 1px solid #F0F0F0; 
-            box-shadow: 0 4px 12px rgba(0,0,0,0.01); 
-            margin-bottom: 16px; 
+            border-radius: 16px; 
+            border: 1px solid #EAEAEA; 
+            box-shadow: 0 4px 16px rgba(0,0,0,0.015); 
+            margin-bottom: 20px; 
             width: 100%;
             box-sizing: border-box !important;
         }
         .card-title { 
-            font-size: 0.95rem; 
+            font-size: 1rem; 
             font-weight: 700; 
             color: #111111 !important;
             margin-top: 0; 
-            margin-bottom: 10px; 
+            margin-bottom: 12px; 
             display: flex; 
             align-items: center; 
-            gap: 6px; 
+            gap: 8px; 
         }
         .card-content { 
-            font-size: 0.85rem; 
-            line-height: 1.5; 
+            font-size: 0.88rem; 
+            line-height: 1.6; 
             color: #444444 !important;
             margin: 0; 
             word-break: keep-all;
         }
         
-        /* 📱 추천 질문 태그 칩 스타일 */
+        /* 📱 추천 질문 태그 칩 스타일 (클릭 영역 및 마진 최적화) */
         .card-highlight { 
             color: #FF4B4B !important; 
             font-weight: 600; 
-            background: #FFF0F0 !important;
-            padding: 6px 12px;
+            background: #FFF2F2 !important;
+            padding: 6px 14px;
             border-radius: 20px;
             display: inline-block; 
-            margin: 4px 2px;
-            font-size: 0.8rem;
-            border: 1px solid #FFE1E1;
+            margin: 5px 3px;
+            font-size: 0.82rem;
+            border: 1px solid #FFD5D5;
             touch-action: manipulation;
         }
 
@@ -166,12 +166,12 @@ st.markdown("""
         }
 
         @media (min-width: 768px) {
-            .block-container { padding: 2rem 5rem !important; }
-            .title-section-container { padding: 26px 32px; text-align: center; }
-            .title-text { font-size: 2.2rem !important; }
-            .subtitle-text { font-size: 1rem !important; }
-            .premium-card { padding: 20px 24px; }
-            .card-highlight { padding: 6px 12px; margin: 0 4px; }
+            .block-container { padding: 2.5rem 6rem !important; }
+            .title-section-container { padding: 28px 36px; text-align: center; }
+            .title-text { font-size: 2.3rem !important; }
+            .subtitle-text { font-size: 1.05rem !important; }
+            .premium-card { padding: 22px 26px; }
+            .card-highlight { padding: 6px 14px; margin: 0 5px; }
         }
     </style>
 """, unsafe_allow_html=True)
@@ -405,7 +405,7 @@ if user_input := st.chat_input("Gemini에 물어보기..."):
 
         # 📅 [2026-2027 학사일정 데이터 세트 정의]
         CLUB_DAYS = {date(2026, 8, 27), date(2026, 9, 17), date(2026, 10, 22)}
-        NEXT_CLUB_DAYS = {day + timedelta(weeks=1) for day in CLUB_DAYS}  # 동아리 다음 주 목요일 데이터 연산 자동화
+        NEXT_CLUB_DAYS = {day + timedelta(weeks=1) for day in CLUB_DAYS}  # 동아리 다음 주 목요일 연산
 
         # 🛑 쉬는 날 (휴업일 / 공공 공휴일)
         HOLIDAYS = {
@@ -417,17 +417,17 @@ if user_input := st.chat_input("Gemini에 물어보기..."):
             date(2027, 1, 1)     # 신정
         }
         
-        # 📝 특수 일정 (일과 변동 발생)
+        # 📝 특수 일정 (⚠️ 요구사항: '오늘' 단어 전면 제거 및 객관적/친근한 사실 진술형으로 수정)
         SPECIAL_SCHEDULES = {
-            date(2026, 8, 19): "오늘은 개학식 날이야! 오랜만에 학교 오느라 고생 많았어.",
-            date(2026, 10, 7): "오늘은 금요일 시간표로 수업을 변경해서 진행하는 날이야! 시간표 헷갈리지 않게 조심해.",
-            date(2026, 10, 20): "지필평가(중간/기말) 기간이야! 시험 끝나고 바로 하교하니까 일정 참고해.",
-            date(2026, 10, 21): "지필평가(중간/기말) 기간이야! 시험 끝나고 바로 하교하니까 일정 참고해.",
-            date(2026, 12, 14): "1,2학년 기말고사 시험 기간이야! 시험 일정 끝나고 바로 하교해.",
-            date(2026, 12, 15): "1,2학년 기말고사 시험 기간이야! 시험 일정 끝나고 바로 하교해.",
-            date(2026, 12, 30): "오늘은 우리 학교 축제인 '서연제'가 열리는 날이야! 신나게 즐기자 🎉",
-            date(2027, 1, 4): "오늘은 차기 학생회장 선거가 진행되는 날이야! 소중한 한 표 행사하자 🗳️",
-            date(2027, 1, 8): "오늘 드디어 2학기 종업식날이야! 한 학기 동안 정말 수고 많았어. 🥳"
+            date(2026, 8, 19): "2학기 개학식을 진행하는 날이야!",
+            date(2026, 10, 7): "금요일 시간표로 수업을 변경해서 진행하는 날이야!",
+            date(2026, 10, 20): "1,2학년은 중간고사, 3학년은 기말고사를 치르는 지필평가 기간이야! 시험 일정이 끝나면 바로 하교해.",
+            date(2026, 10, 21): "1,2학년은 중간고사, 3학년은 기말고사를 치르는 지필평가 기간이야! 시험 일정이 끝나면 바로 하교해.",
+            date(2026, 12, 14): "1,2학년 기말고사 시험을 보는 날이야! 시험 일정이 끝나면 바로 하교해.",
+            date(2026, 12, 15): "1,2학년 기말고사 시험을 보는 날이야! 시험 일정이 끝나면 바로 하교해.",
+            date(2026, 12, 30): "우리 학교 축제인 '서연제' 행사가 있는 날이야!",
+            date(2027, 1, 4): "차기 학생회장 선거가 진행되는 날이야!",
+            date(2027, 1, 8): "2학기 종업식을 하는 날이야!"
         }
 
         # 🛑 예외 예측 레이어 A: 주말 및 공휴일/방학 급식 필터링
@@ -439,15 +439,15 @@ if user_input := st.chat_input("Gemini에 물어보기..."):
                 if target_date.weekday() in [5, 6]:
                     full_response = f"질문한 날짜({target_date.strftime('%m월 %d일')})는 주말이라 급식이 없어! 주말엔 맛있는 거 챙겨 먹어. ☀️"
                 elif is_vacation:
-                    full_response = f"질문한 날짜는 즐거운 여름방학 기간(7/22 ~ 8/18)이라 학교 급식이 운영되지 않아! 🏖️"
+                    full_response = f"질문한 기간은 여름방학 기간(7/22 ~ 8/18)이라서 학교 급식이 운영되지 않는 시기야! 🏖️"
                 elif is_chuseok:
-                    full_response = f"질문한 날짜는 즐거운 추석 연휴라 학교 급식이 없어! 맛있는 명절 명절 음식 많이 먹어. 🌾"
+                    full_response = f"질문한 기간은 추석 연휴라 학교 급식이 없어! 맛있는 명절 명절 음식 많이 먹어. 🌾"
                 elif target_date_only in HOLIDAYS:
-                    full_response = f"질문한 날짜({target_date.strftime('%m월 %d일')})는 학교가 쉬는 공휴일/휴업일이라 급식이 제공되지 않아!"
+                    full_response = f"질문한 날짜({target_date.strftime('%m월 %d일')})는 학교가 쉬는 공휴일/휴업일이라 급식이 제공되지 않는 날이야!"
                 elif target_date_only == date(2026, 7, 17):
                     full_response = "7월 17일은 제헌절로 인한 휴업일이라 급식이 제공되지 않아!"
                 elif target_date_only == date(2026, 7, 21):
-                    full_response = "7월 21일은 신나는 방학식 날이라서 급식이 제공되지 않아!"
+                    full_response = "7월 21일은 방학식 날이라서 급식이 제공되지 않는 날이야!"
                 else:
                     is_asking_lunch = False  # 일반 급식 처리 RAG 연계 처리로 넘김
 
@@ -461,35 +461,35 @@ if user_input := st.chat_input("Gemini에 물어보기..."):
             with st.chat_message("assistant"):
                 target_weekday = target_date.weekday()
                 
-                # 1단계: 학교 안 가는 날 (주말, 방학, 추석, 지정 공휴일) 먼저 처리
+                # 1단계: 학교 안 가는 날 (주말, 방학, 추석, 지정 공휴일)
                 if target_weekday in [5, 6]:
-                    full_response = "질문한 날짜는 주말이야! 학교에 안 가니까 하교 시간도 따로 없어. 🛌"
+                    full_response = "주말이라 학교에 안 가니까 하교 시간도 따로 없어! 🛌"
                 elif is_vacation:
-                    full_response = "해당 기간(7/22 ~ 8/18)은 여름방학 기간이야! 학교에 등교하지 않으니 푹 쉬어. 🏖️"
+                    full_response = "여름방학 기간(7/22 ~ 8/18)이라 학교에 등교하지 않는 날이야! 🏖️"
                 elif is_chuseok:
-                    full_response = "해당 기간(9/24 ~ 9/27)은 추석 연휴라서 학교에 안 가! 가족들과 즐거운 명절 보내. 🌾"
+                    full_response = "추석 연휴라서 학교에 가지 않는 날이야! 🌾"
                 elif target_date_only in HOLIDAYS:
-                    full_response = f"질문한 {target_date.strftime('%m월 %d일')}은 학교가 쉬는 날(공휴일/재량휴업일)이라 하교 시간이 없어! 🎈"
+                    full_response = f"학교가 쉬는 날(공휴일/재량휴업일)이라 하교 시간이 없는 날이야! 🎈"
                 
                 # 2단계: 특수 일정이 있는 날 안내
                 elif target_date_only in SPECIAL_SCHEDULES:
                     full_response = SPECIAL_SCHEDULES[target_date_only]
                 
-                # 3단계: 정규 요일별 하교 시간 로직 전개
+                # 3단계: 정규 요일별 하교 시간 로직 전개 (4시 하교 / 3시 하교 완벽 분류)
                 else:
-                    if target_weekday == 1:  # 화요일 무조건 7교시
-                        full_response = f"질문한 {weekday_map[target_weekday]}은 정규 7교시 수업을 진행하니까 **오후 4시**에 하교해! 🏫"
+                    if target_weekday == 1:  # 화요일 7교시 -> 4시
+                        full_response = f"화요일은 정규 7교시 수업을 진행하니까 **오후 4시**에 하교해! 🏫"
                     
-                    elif target_weekday == 3:  # 목요일 정밀 연산 알고리즘
+                    elif target_weekday == 3:  # 목요일 조건문
                         if target_date_only in CLUB_DAYS:
-                            full_response = f"질문한 목요일({target_date.strftime('%m월 %d일')})은 **동아리 활동이 있는 날**이라 7교시로 진행되어 **오후 4시**에 하교해! 🎸"
+                            full_response = f"목요일({target_date.strftime('%m월 %d일')})은 **동아리 활동이 있는 날**이라 7교시로 진행되어 **오후 4시**에 하교해! 🎸"
                         elif target_date_only in NEXT_CLUB_DAYS:
-                            full_response = f"질문한 목요일({target_date.strftime('%m월 %d일')})은 **동아리 활동을 진행했던 다음 주 목요일**이라 한 교시가 더 추가된 7교시(보충/연장)로 운영되어 **오후 4시**에 하교하게 돼! ✍️"
+                            full_response = f"목요일({target_date.strftime('%m월 %d일')})은 **동아리 활동을 했던 다음 주 목요일**이라 한 교시가 더해진 7교시날이라서 **오후 4시**에 하교해! ✍️"
                         else:
-                            full_response = f"일반적인 목요일({target_date.strftime('%m월 %d일')})은 6교시 수업이라 **오후 3시**에 하교해! 🏃"
+                            full_response = f"일반적인 목요일은 6교시 수업이라 **오후 3시**에 하교해! 跑"
                     
-                    else:  # 월, 수, 금 일반 6교시
-                        full_response = f"질문한 {weekday_map[target_weekday]}은 정규 6교시 수업을 진행하니까 **오후 3시**에 하교해! 🏃"
+                    else:  # 월, 수, 금 6교시 -> 3시
+                        full_response = f"질문한 {weekday_map[target_weekday]}은 정규 6교시 수업을 진행하니까 **오후 3시**에 하교하는 날이야! 🏃"
                 
                 st.write(full_response)
                 st.session_state.messages.append({"role": "assistant", "content": full_response, "contexts": ["실시간 정밀 하교 예측 알고리즘"]})
@@ -507,8 +507,9 @@ if user_input := st.chat_input("Gemini에 물어보기..."):
 
             [답변 규칙]
             1. 제공된 데이터베이스 내용에 기반해서만 대답하고 거짓 내용을 지어내지 마세요.
-            2. 학칙이나 위치 등 데이터가 없어 모호한 질문의 경우, 문장 가장 끝부분에 "[확인 필요]"를 정확하게 적어주세요.
-            3. 스마트폰 화면에서 읽기 편하게 불필요한 인사는 빼고, 줄바꿈을 조합하여 최대 3~4줄 이내로 핵심만 요약해서 친구처럼 반말로 대답하세요.
+            2. 학사일정이나 이벤트를 안내할 때 '오늘'이라는 말을 절대로 사용하지 마세요. 대신 "~한 날이야", "~하는 날은 이때야" 처럼 서술하세요.
+            3. 학칙이나 위치 등 데이터가 없어 모호한 질문의 경우, 문장 가장 끝부분에 "[확인 필요]"를 정확하게 적어주세요.
+            4. 스마트폰 화면에서 읽기 편하게 불필요한 인사는 빼고, 줄바꿈을 조합하여 최대 3~4줄 이내로 핵심만 요약해서 친구처럼 반말로 대답하세요.
             """
 
             api_messages = [{"role": "system", "content": SYSTEM_PROMPT}]
