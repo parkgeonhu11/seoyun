@@ -24,7 +24,7 @@ except KeyError:
 
 client = OpenAI(api_key=MY_OPENAI_API_KEY)
 
-# 🎨 레이아웃 미세 조정 (여백 완화 및 피드백 반영 레이어 디자인)
+# 🎨 레이아웃 미세 조정 (프리미엄 UI/UX 컴포넌트 디자인 스타일 시트)
 st.markdown("""
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap');
@@ -36,6 +36,7 @@ st.markdown("""
             box-sizing: border-box !important;
             -webkit-text-size-adjust: none !important;
             text-size-adjust: none !important;
+            background-color: #F9FAFB !important;
         }
         
         /* ⚙️ 불필요한 툴바 및 메뉴 제거 */
@@ -46,10 +47,10 @@ st.markdown("""
         }
 
         .block-container {
-            padding-top: 1.5rem !important; /* 위쪽 여백 살짝 확보 */
+            padding-top: 1rem !important;
             padding-bottom: 3rem !important;
-            padding-left: 16px !important;
-            padding-right: 16px !important;
+            padding-left: 14px !important;
+            padding-right: 14px !important;
             max-width: 100% !important;
             box-sizing: border-box !important;
         }
@@ -59,79 +60,94 @@ st.markdown("""
             font-family: 'Noto Sans KR', sans-serif !important;
         }
 
-        /* ✨ 상단 메인 비주얼 배너 (그라데이션 및 패딩 미세 조정) */
+        /* ✨ 상단 메인 비주얼 배너 (모던 스쿨룩 그라데이션) */
         .title-section-container { 
             padding: 24px 20px; 
-            border-radius: 18px; 
-            background: linear-gradient(135deg, #FFFDFB 0%, #FFF3F3 100%) !important;
-            border: 1px solid #FFD8D8;
-            box-shadow: 0 6px 20px rgba(255, 107, 107, 0.04); 
-            margin-bottom: 20px; 
+            border-radius: 20px; 
+            background: linear-gradient(135deg, #FF6B6B 0%, #FF8E53 100%) !important;
+            box-shadow: 0 10px 25px rgba(255, 107, 107, 0.2); 
+            margin-bottom: 22px; 
             text-align: left; 
             width: 100%;
             box-sizing: border-box !important;
         }
         .title-text { 
-            background: linear-gradient(135deg, #FF4B4B, #FF6B2B); 
-            -webkit-background-clip: text; 
-            -webkit-text-fill-color: transparent; 
-            font-size: 1.6rem !important; 
+            color: #FFFFFF !important;
+            font-size: 1.65rem !important; 
             font-weight: 900 !important; 
             margin: 0; 
             letter-spacing: -1px; 
             line-height: 1.2;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
         .subtitle-text { 
-            color: #555555 !important;
-            font-size: 0.88rem !important; 
+            color: rgba(255, 255, 255, 0.9) !important;
+            font-size: 0.9rem !important; 
             font-weight: 500 !important; 
-            margin-top: 8px; 
+            margin-top: 6px; 
             margin-bottom: 0; 
             word-break: keep-all; 
             line-height: 1.4;
         }
 
-        /* 💎 인포메이션 보드 카드 레이아웃 테두리 및 라운드 조정 */
+        /* 💎 대시보드형 안내 카드 카드 레이아웃 */
         .premium-card { 
             padding: 20px 18px; 
             background: #FFFFFF !important;
-            border-radius: 16px; 
-            border: 1px solid #EAEAEA; 
-            box-shadow: 0 4px 16px rgba(0,0,0,0.015); 
-            margin-bottom: 20px; 
+            border-radius: 20px; 
+            border: 1px solid #E5E7EB; 
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03); 
+            margin-bottom: 22px; 
             width: 100%;
             box-sizing: border-box !important;
         }
         .card-title { 
-            font-size: 1rem; 
+            font-size: 1.05rem; 
             font-weight: 700; 
-            color: #111111 !important;
+            color: #1F2937 !important;
             margin-top: 0; 
-            margin-bottom: 12px; 
+            margin-bottom: 14px; 
             display: flex; 
             align-items: center; 
             gap: 8px; 
         }
         .card-content { 
-            font-size: 0.88rem; 
+            font-size: 0.9rem; 
             line-height: 1.6; 
-            color: #444444 !important;
+            color: #4B5563 !important;
             margin: 0; 
             word-break: keep-all;
         }
         
-        /* 📱 추천 질문 태그 칩 스타일 (클릭 영역 및 마진 최적화) */
+        /* 📱 추천 질문 태그 칩 스타일 (클릭하고 싶게 만드는 배지화) */
+        .chip-container {
+            margin-top: 10px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
         .card-highlight { 
-            color: #FF4B4B !important; 
+            color: #FF5252 !important; 
             font-weight: 600; 
-            background: #FFF2F2 !important;
+            background: #FFF5F5 !important;
             padding: 6px 14px;
-            border-radius: 20px;
+            border-radius: 30px;
             display: inline-block; 
-            margin: 5px 3px;
             font-size: 0.82rem;
-            border: 1px solid #FFD5D5;
-            touch-action: manipulation;
+            border: 1px solid #FFE0E0;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 5px rgba(255, 82, 82, 0.05);
+        }
+
+        /* 🔍 근거 스니펫 보기 좋게 커스텀 테두리화 */
+        .evidence-box {
+            background-color: #F9FAFB !important;
+            border-left: 4px solid #FF6B6B !important;
+            padding: 8px 12px !important;
+            margin: 6px 0 !important;
+            border-radius: 4px;
+            font-size: 0.85rem !important;
+            color: #374151 !important;
         }
 
         /* 🔘 버튼 스타일 최적화 */
@@ -140,38 +156,41 @@ st.markdown("""
             padding: 10px 16px !important;
             font-size: 0.95rem !important;
             font-weight: 600 !important;
-            border-radius: 10px !important;
+            border-radius: 12px !important;
+            border: 1px solid #E5E7EB !important;
+            background: #FFFFFF !important;
             box-sizing: border-box !important;
-            touch-action: manipulation !important;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02) !important;
         }
 
         /* 💬 채팅 입력창 높이 및 크기 제어 */
         div[data-testid="stChatInput"] {
             padding: 0px !important;
+            background-color: transparent !important;
         }
         div[data-testid="stChatInput"] textarea {
-            min-height: 42px !important;
-            height: 42px !important;
-            max-height: 100px !important;
+            border-radius: 16px !important;
+            border: 1px solid #E5E7EB !important;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05) !important;
             font-size: 0.95rem !important;
-            padding: 10px 12px !important;
-            line-height: 1.3 !important;
+            padding: 12px 14px !important;
         }
 
         .sidebar-custom-box {
-            background: linear-gradient(135deg, #FFF0F0 0%, #FFE3E3 100%) !important; 
-            border-radius: 12px; 
-            padding: 12px; 
-            border: 1px solid #FFAFAF; 
+            background: linear-gradient(135deg, #FFF5F5 0%, #FFEBEB 100%) !important; 
+            border-radius: 14px; 
+            padding: 14px; 
+            border: 1px solid #FFC7C7; 
         }
 
+        /* 💻 데스크톱 환경 반응형 확장 레이아웃 조정 */
         @media (min-width: 768px) {
-            .block-container { padding: 2.5rem 6rem !important; }
-            .title-section-container { padding: 28px 36px; text-align: center; }
-            .title-text { font-size: 2.3rem !important; }
-            .subtitle-text { font-size: 1.05rem !important; }
-            .premium-card { padding: 22px 26px; }
-            .card-highlight { padding: 6px 14px; margin: 0 5px; }
+            .block-container { padding: 2.5rem 8rem !important; }
+            .title-section-container { padding: 32px 40px; text-align: center; justify-content: center; }
+            .title-text { font-size: 2.4rem !important; }
+            .subtitle-text { font-size: 1.05rem !important; margin-top: 10px;}
+            .premium-card { padding: 24px 28px; }
+            .card-highlight { font-size: 0.88rem; padding: 8px 16px; }
         }
     </style>
 """, unsafe_allow_html=True)
@@ -200,7 +219,7 @@ def DEEP_INITIALIZE_RAG_ENGINE():
             ["조퇴 및 외출", "일과 중 아프거나 부득이한 사정으로 조퇴·외출을 하려면 반드시 담임선생님의 승인을 받아 '외출증/조퇴증'을 발급받은 후 경비실에 제출하고 하교해야 합니다."],
             ["복장 규정", "사복(평상복) 착용은 금지됩니다. 등교 시 교복 또는 학교 생활복, 체육복 중에서 본인이 원하는 옷을 자율적으로 선택해서 편하게 입고 오면 됩니다."],
             ["체육복 등교", "체육 수업이 없는 날을 포함하여 평일 언제든 학교 지정 체육복을 입고 등하교하는 것이 전면 허용됩니다."],
-            ["교복 사복 혼용", "교복이나 체육복 위에 사복 아우터(패딩, 코트 등)를 입는 것은 허용되지만, 아우터 안에는 반드시 교복, 생활복, 체육복 중 하나를 착용해야 합니다."],
+            ["교복 사복 혼용", "교복나 체육복 위에 사복 아우터(패딩, 코트 등)를 입는 것은 허용되지만, 아우터 안에는 반드시 교복, 생활복, 체육복 중 하나를 착용해야 합니다."],
             ["두발 규정", "우리 학교 두발 규정에 대해서 명확하게 정해진 틀은 없지만, 타인에게 혐오감을 주거나 너무 과도하게 눈에 띄는 스타일, 혹은 수업에 방해가 되는 수준의 두발 상태는 제한 및 금지될 수 있습니다."],
             ["교내 화장", "우리 학교 화장 규정에 대해서는 딱히 명확하게 정해진 규칙은 없지만, 너무 과도하게 눈에 띄거나 수업 분위기에 방해가 되는 정도의 화장은 금지 및 제한될 수 있습니다."],
             ["피어싱 및 귀걸이", "귀걸이나 피어싱은 착용 가능하나, 체육 활동 시 부상 위험이 있거나 타인에게 위해를 가할 수 있는 날카롭고 과도하게 큰 장신구는 착용을 금지합니다."],
@@ -343,15 +362,15 @@ st.markdown("""
             자주 묻는 질문 예시
         </div>
         <p class="card-content">
-            궁금한 점을 아래 입력창에 검색하거나 참고해 보세요.<br><br>
+            궁금한 점을 아래 입력창에 검색하거나 참고해 보세요.
+        </p>
+        <div class="chip-container">
             <span class="card-highlight">🍱 반별 급식 순서가 어떻게 돼?</span> 
             <span class="card-highlight">🏓 체육관 없는데 체육 어디서 해?</span> 
             <span class="card-highlight">🏃 오늘 하교 시간 언제야?</span>
-        </p>
+        </div>
     </div>
 """, unsafe_allow_html=True)
-
-st.markdown("---")
 
 if "messages" not in st.session_state:
     st.session_state.messages = [
@@ -363,14 +382,14 @@ for msg in st.session_state.messages:
     with st.chat_message(msg["role"]):
         st.write(msg["content"])
         if "contexts" in msg and msg["contexts"]:
-            with st.expander("🔍 관련 규정 근거"):
+            with st.expander("🔍 관련 규정 근거 보기"):
                 for source in msg["contexts"]:
-                    st.caption(source)
+                    st.markdown(f'<div class="evidence-box">{source}</div>', unsafe_allow_html=True)
 
 # ==========================================
 # 5. 🤖 실시간 대화 추론 엔진 (정밀 학사일정 및 하교 예외 처리 결합)
 # ==========================================
-if user_input := st.chat_input("Gemini에 물어보기..."):
+if user_input := st.chat_input("Gemini에 무엇이든 물어보세요..."):
     with st.chat_message("user"):
         st.write(user_input)
     st.session_state.messages.append({"role": "user", "content": user_input})
@@ -417,7 +436,7 @@ if user_input := st.chat_input("Gemini에 물어보기..."):
             date(2027, 1, 1)     # 신정
         }
         
-        # 📝 특수 일정 (⚠️ 요구사항: '오늘' 단어 전면 제거 및 객관적/친근한 사실 진술형으로 수정)
+        # 📝 특수 일정
         SPECIAL_SCHEDULES = {
             date(2026, 8, 19): "2학기 개학식을 진행하는 날이야!",
             date(2026, 10, 7): "금요일 시간표로 수업을 변경해서 진행하는 날이야!",
@@ -486,7 +505,7 @@ if user_input := st.chat_input("Gemini에 물어보기..."):
                         elif target_date_only in NEXT_CLUB_DAYS:
                             full_response = f"목요일({target_date.strftime('%m월 %d일')})은 **동아리 활동을 했던 다음 주 목요일**이라 한 교시가 더해진 7교시날이라서 **오후 4시**에 하교해! ✍️"
                         else:
-                            full_response = f"일반적인 목요일은 6교시 수업이라 **오후 3시**에 하교해! 跑"
+                            full_response = f"일반적인 목요일은 6교시 수업이라 **오후 3시**에 하교해! 🏃"
                     
                     else:  # 월, 수, 금 6교시 -> 3시
                         full_response = f"질문한 {weekday_map[target_weekday]}은 정규 6교시 수업을 진행하니까 **오후 3시**에 하교하는 날이야! 🏃"
@@ -538,12 +557,10 @@ if user_input := st.chat_input("Gemini에 물어보기..."):
                 cleaned_display_response = full_response.replace("[확인 필요]", "").strip()
                 response_container.write(cleaned_display_response)
 
-                with st.expander("🔍 매칭 규정 확인"):
-                    if matched_chunks:
-                        for idx, source in enumerate(matched_chunks):
-                            st.caption(f"**규정 {idx + 1}:** {source}")
-                    else:
-                        st.caption("데이터베이스에 매칭된 내용이 없습니다.")
+                if matched_chunks:
+                    with st.expander("🔍 관련 규정 근거 보기"):
+                        for source in matched_chunks:
+                            st.markdown(f'<div class="evidence-box">{source}</div>', unsafe_allow_html=True)
 
             st.session_state.messages.append({
                 "role": "assistant",
