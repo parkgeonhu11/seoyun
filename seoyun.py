@@ -24,7 +24,7 @@ except KeyError:
 
 client = OpenAI(api_key=MY_OPENAI_API_KEY)
 
-# 🎨 전 기기 글씨 가시성 및 가독성 100% 보장 스타일 시트
+# 🎨 [오류 완전 수정] PC 다크모드 하단 검은색 바 현상 해결을 위한 미니멀 스타일 시트
 st.markdown("""
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght=400;500;700;900&display=swap');
@@ -61,7 +61,7 @@ st.markdown("""
             font-family: 'Noto Sans KR', sans-serif !important;
         }
 
-        /* 🔴 챗봇 메시지 영역 글씨 강제 가시성 확보 (하얗게 증발 방지) */
+        /* 🔴 챗봇 메시지 영역 스타일 */
         [data-testid="stChatMessage"] {
             background-color: #FFFFFF !important;
             border: 1px solid #E2E8F0 !important;
@@ -70,7 +70,6 @@ st.markdown("""
             box-shadow: 0 2px 8px rgba(15, 23, 42, 0.02) !important;
         }
         
-        /* 메인 콘텐츠 영역 내부의 모든 텍스트 컬러를 어두운 색으로 강제 지정 */
         [data-testid="stChatMessage"] *, 
         [data-testid="stChatMessage"] p, 
         .stMarkdown div p,
@@ -159,35 +158,26 @@ st.markdown("""
             font-size: 0.85rem !important;
         }
 
-        /* 🔘 🛑 하단 바 영역만 정확하게 타겟팅하여 투명화 (본문 침범 방지) */
+        /* 🎯 [가장 중요] PC와 모바일 모두 하단 입력창 주변 바탕을 연한 회색(#F8FAFC)으로 고정 */
         div[data-testid="stBottom"],
-        div[data-testid="stBottomBlockContainer"] {
+        div[data-testid="stBottomBlockContainer"],
+        div[data-testid="stBottomBlockContainer"] > div {
             background-color: #F8FAFC !important;
             background: #F8FAFC !important;
             box-shadow: none !important;
             border: none !important;
         }
 
-        /* 텍스트 입력창 영역 레이아웃 유지 */
-        .stChatInputContainer, 
-        div[data-testid="stChatInput"] {
-            background-color: transparent !important;
-            background: transparent !important;
-        }
-
-        /* 실제 글자가 적히는 하단 텍스트 박스만 흰색 배경에 검은 글씨로 고정 */
-        div[data-testid="stChatInput"] textarea,
-        .stChatInputContainer textarea {
+        /* 실제 텍스트 입력 칸 안쪽 스타일만 하얗게 따로 분리 */
+        div[data-testid="stChatInput"] textarea {
             background-color: #FFFFFF !important;
             background: #FFFFFF !important;
             color: #0F172A !important;
             border: 1px solid #CBD5E1 !important;
             border-radius: 14px !important;
-            box-shadow: 0 4px 20px rgba(15, 23, 42, 0.06) !important;
         }
         
-        div[data-testid="stChatInput"] textarea::placeholder,
-        .stChatInputContainer textarea::placeholder {
+        div[data-testid="stChatInput"] textarea::placeholder {
             color: #94A3B8 !important;
         }
 
@@ -197,7 +187,7 @@ st.markdown("""
             padding: 12px; 
         }
 
-        /* PC 화면 대응 */
+        /* PC 화면 대응 너비 중앙 정렬 */
         @media (min-width: 1025px) {
             .block-container { max-width: 800px !important; margin: 0 auto !important; padding-top: 4.5rem !important; }
             .title-section-container { padding: 34px 36px; }
