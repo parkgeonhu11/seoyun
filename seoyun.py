@@ -24,12 +24,12 @@ except KeyError:
 
 client = OpenAI(api_key=MY_OPENAI_API_KEY)
 
-# 🎨 스마트폰/아이패드/PC 전 기기 가독성 완벽 보장 스타일 시트
+# 🎨 전 기기 글씨 가시성 및 가독성 100% 보장 스타일 시트
 st.markdown("""
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght=400;500;700;900&display=swap');
 
-        /* 📱 모바일/태블릿 글자 및 너비 축소 방지 + 가로 스크롤 제거 */
+        /* 📱 기본 배경 정의 및 가로 스크롤 제거 */
         html, body, [data-testid="stAppViewContainer"], [data-testid="stHeader"] {
             max-width: 100vw !important;
             overflow-x: hidden !important;
@@ -46,9 +46,9 @@ st.markdown("""
             height: 0 !important;
         }
 
-        /* 🧩 기본 메인 컨테이너 여백 최적화 (상단 짤림 방지 보정) */
+        /* 🧩 메인 컨테이너 여백 최적화 */
         .block-container {
-            padding-top: 3.5rem !important; /* 상단 헤더 영역 확보로 모바일 짤림 방지 */
+            padding-top: 3.5rem !important;
             padding-bottom: 9rem !important; 
             padding-left: 4% !important;
             padding-right: 4% !important;
@@ -56,12 +56,12 @@ st.markdown("""
             box-sizing: border-box !important;
         }
 
-        /* 전역 폰트 및 통합 가독성 컬러 지정 */
+        /* 전역 폰트 지정 */
         .stApp, .title-section-container, .premium-card {
             font-family: 'Noto Sans KR', sans-serif !important;
         }
 
-        /* 🔴 챗봇 메시지 영역 배경 스타일 및 텍스트 강제 가시성 확보 */
+        /* 🔴 챗봇 메시지 영역 글씨 강제 가시성 확보 (하얗게 증발 방지) */
         [data-testid="stChatMessage"] {
             background-color: #FFFFFF !important;
             border: 1px solid #E2E8F0 !important;
@@ -69,9 +69,12 @@ st.markdown("""
             margin-bottom: 10px !important;
             box-shadow: 0 2px 8px rgba(15, 23, 42, 0.02) !important;
         }
+        
+        /* 메인 콘텐츠 영역 내부의 모든 텍스트 컬러를 어두운 색으로 강제 지정 */
         [data-testid="stChatMessage"] *, 
         [data-testid="stChatMessage"] p, 
-        .stMarkdown div p {
+        .stMarkdown div p,
+        [data-testid="stMarkdownContainer"] p {
             color: #0F172A !important;
             font-size: 0.95rem !important;
             line-height: 1.6 !important;
@@ -94,8 +97,6 @@ st.markdown("""
             font-weight: 900 !important; 
             margin: 0 !important; 
             padding: 0 !important;
-            letter-spacing: -0.5px; 
-            line-height: 1.3 !important;
             text-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
         .subtitle-text { 
@@ -104,10 +105,7 @@ st.markdown("""
             font-weight: 500 !important; 
             margin-top: 8px !important; 
             margin-bottom: 0 !important; 
-            padding: 0 !important;
-            word-break: keep-all; 
             line-height: 1.4 !important;
-            opacity: 0.95;
         }
 
         /* 💎 대시보드형 안내 카드 레이아웃 */
@@ -125,7 +123,6 @@ st.markdown("""
             font-size: 1.0rem !important; 
             font-weight: 700 !important; 
             color: #0F172A !important;
-            margin-top: 0 !important; 
             margin-bottom: 12px !important; 
             display: flex; 
             align-items: center; 
@@ -133,19 +130,15 @@ st.markdown("""
         }
         .card-content { 
             font-size: 0.88rem !important; 
-            line-height: 1.5 !important; 
             color: #334155 !important;
-            margin: 0 !important; 
-            word-break: keep-all;
         }
         
-        /* 📱 추천 질문 태그 칩 레이아웃 */
+        /* 📱 추천 질문 태그 칩 */
         .chip-container {
             margin-top: 14px;
             display: flex;
             flex-wrap: wrap;
             gap: 8px;
-            width: 100%;
         }
         .card-highlight { 
             color: #E11D48 !important; 
@@ -155,9 +148,6 @@ st.markdown("""
             border-radius: 30px;
             font-size: 0.82rem !important;
             border: 1px solid #FECDD3 !important;
-            display: inline-block;
-            white-space: nowrap;
-            box-shadow: 0 2px 4px rgba(225, 29, 72, 0.04);
         }
 
         /* 🔍 근거 스니펫 박스 */
@@ -165,87 +155,55 @@ st.markdown("""
             background-color: #F1F5F9 !important;
             border-left: 4px solid #EF4444 !important;
             padding: 12px 14px !important;
-            margin: 6px 0 !important;
-            border-radius: 6px;
-            font-size: 0.85rem !important;
             color: #1E293B !important;
-            line-height: 1.6;
+            font-size: 0.85rem !important;
         }
 
-        /* 🔘 🛑 [PC 검은색 바 차단 해결 보정] 하단 고정 요소 영역 배경 강제 동기화 */
+        /* 🔘 🛑 하단 바 영역만 정확하게 타겟팅하여 투명화 (본문 침범 방지) */
         div[data-testid="stBottom"],
-        div[data-testid="stBottomBlockContainer"],
-        div[data-testid="stBottomBlockContainer"] > div,
-        div[style*="position: fixed"] {
+        div[data-testid="stBottomBlockContainer"] {
             background-color: #F8FAFC !important;
             background: #F8FAFC !important;
             box-shadow: none !important;
             border: none !important;
         }
 
-        /* 텍스트 입력창 컨테이너 레이아웃 가시성 무조건 고정 */
+        /* 텍스트 입력창 영역 레이아웃 유지 */
         .stChatInputContainer, 
         div[data-testid="stChatInput"] {
-            display: flex !important;
-            visibility: visible !important;
-            opacity: 1 !important;
-            padding: 14px 0px !important;
             background-color: transparent !important;
             background: transparent !important;
         }
 
-        /* 실제 글자가 적히는 하단 박스 영역을 흰색(#FFFFFF)으로 강제 지정 */
+        /* 실제 글자가 적히는 하단 텍스트 박스만 흰색 배경에 검은 글씨로 고정 */
         div[data-testid="stChatInput"] textarea,
         .stChatInputContainer textarea {
-            display: block !important;
-            visibility: visible !important;
-            opacity: 1 !important;
             background-color: #FFFFFF !important;
             background: #FFFFFF !important;
             color: #0F172A !important;
             border: 1px solid #CBD5E1 !important;
             border-radius: 14px !important;
             box-shadow: 0 4px 20px rgba(15, 23, 42, 0.06) !important;
-            font-size: 0.95rem !important;
-            padding: 12px !important;
         }
         
-        /* 미입력 상태 플레이스홀더(힌트문구) 색상 최적화 */
         div[data-testid="stChatInput"] textarea::placeholder,
         .stChatInputContainer textarea::placeholder {
             color: #94A3B8 !important;
-            opacity: 1 !important;
         }
 
         .sidebar-custom-box {
             background: linear-gradient(135deg, #FFF1F2 0%, #FFE4E6 100%) !important; 
             border-radius: 12px; 
             padding: 12px; 
-            border: 1px solid #FDA4AF; 
         }
 
-        /* ==========================================
-            🎯 PC 및 패드 해상도별 정밀 그리드 튜닝 (애매한 여백 통합 보정)
-           ========================================== */
-        @media (min-width: 600px) and (max-width: 1024px) {
-            .block-container { padding-left: 5% !important; padding-right: 5% !important; padding-top: 4rem !important; }
-            .title-section-container { padding: 30px 24px; }
-            .title-text { font-size: 1.7rem !important; }
-            .subtitle-text { font-size: 0.95rem !important; }
-        }
-
+        /* PC 화면 대응 */
         @media (min-width: 1025px) {
-            /* PC 브라우저 중앙 정렬 및 여백 일치 튜닝 */
             .block-container { max-width: 800px !important; margin: 0 auto !important; padding-top: 4.5rem !important; }
-            .title-section-container { padding: 34px 36px; text-align: left; }
+            .title-section-container { padding: 34px 36px; }
             .title-text { font-size: 2.0rem !important; }
-            .subtitle-text { font-size: 1.0rem !important; margin-top: 10px; }
             .premium-card { padding: 24px; }
-            .card-title { font-size: 1.1rem !important; }
-            .card-content { font-size: 0.95rem !important; }
-            .card-highlight { font-size: 0.88rem !important; padding: 8px 16px; }
             
-            /* 하단 입력창 영역 정렬도 PC 전용 메인 박스 레이아웃과 정확히 맞춤 */
             div[data-testid="stBottomBlockContainer"] {
                 max-width: 800px !important;
                 margin: 0 auto !important;
