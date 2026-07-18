@@ -24,7 +24,7 @@ except KeyError:
 
 client = OpenAI(api_key=MY_OPENAI_API_KEY)
 
-# 🎨 스마트폰/아이패드/PC 전 기기 대응 반응형 스타일 시트
+# 🎨 스마트폰/아이패드/PC 전 기기 가독성 완벽 보장 스타일 시트
 st.markdown("""
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap');
@@ -56,17 +56,17 @@ st.markdown("""
             box-sizing: border-box !important;
         }
 
-        /* 전역 폰트 지정 */
+        /* 전역 폰트 및 통합 가독성 컬러 지정 */
         .stApp, .title-section-container, .premium-card {
             font-family: 'Noto Sans KR', sans-serif !important;
         }
 
-        /* ✨ 메인 비주얼 배너 (모든 해상도 유연 대응) */
+        /* ✨ 메인 비주얼 배너 (어두운 배경색 상정 고대비 흰색 글씨 전용) */
         .title-section-container { 
             padding: 24px 20px; 
             border-radius: 20px; 
-            background: linear-gradient(135deg, #FF6B6B 0%, #FF8E53 100%) !important;
-            box-shadow: 0 8px 20px rgba(255, 107, 107, 0.15); 
+            background: linear-gradient(135deg, #FF5252 0%, #FF7A45 100%) !important;
+            box-shadow: 0 8px 24px rgba(255, 82, 82, 0.2); 
             margin-bottom: 20px; 
             text-align: left; 
             width: 100%;
@@ -76,81 +76,84 @@ st.markdown("""
             color: #FFFFFF !important;
             font-size: 1.5rem !important; 
             font-weight: 900 !important; 
-            margin: 0; 
+            margin: 0 !important; 
+            padding: 0 !important;
             letter-spacing: -0.5px; 
-            line-height: 1.25;
-            text-shadow: 0 1px 3px rgba(0,0,0,0.08);
+            line-height: 1.3 !important;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.15);
         }
         .subtitle-text { 
-            color: rgba(255, 255, 255, 0.95) !important;
-            font-size: 0.85rem !important; 
+            color: #FFFFFF !important;
+            font-size: 0.88rem !important; 
             font-weight: 500 !important; 
-            margin-top: 6px; 
-            margin-bottom: 0; 
+            margin-top: 8px !important; 
+            margin-bottom: 0 !important; 
+            padding: 0 !important;
             word-break: keep-all; 
-            line-height: 1.4;
+            line-height: 1.4 !important;
+            opacity: 0.95;
         }
 
-        /* 💎 대시보드형 안내 카드 레이아웃 */
+        /* 💎 대시보드형 안내 카드 레이아웃 (흰 배경 위 아주 진한 먹색 글씨 전용) */
         .premium-card { 
             padding: 18px 16px; 
             background: #FFFFFF !important;
             border-radius: 18px; 
-            border: 1px solid #E2E8F0; 
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02); 
+            border: 1px solid #CBD5E1; 
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.04); 
             margin-bottom: 20px; 
             width: 100%;
             box-sizing: border-box !important;
         }
         .card-title { 
-            font-size: 0.95rem; 
-            font-weight: 700; 
-            color: #1E293B !important;
-            margin-top: 0; 
-            margin-bottom: 12px; 
+            font-size: 1.0rem !important; 
+            font-weight: 700 !important; 
+            color: #0F172A !important;
+            margin-top: 0 !important; 
+            margin-bottom: 12px !important; 
             display: flex; 
             align-items: center; 
             gap: 6px; 
         }
         .card-content { 
-            font-size: 0.85rem; 
-            line-height: 1.5; 
-            color: #475569 !important;
-            margin: 0; 
+            font-size: 0.88rem !important; 
+            line-height: 1.5 !important; 
+            color: #334155 !important;
+            margin: 0 !important; 
             word-break: keep-all;
         }
         
-        /* 📱 추천 질문 태그 칩 레이아웃 (자동 줄바꿈 플렉스 박스 고도화) */
+        /* 📱 추천 질문 태그 칩 레이아웃 (붉은 텍스트 컬러 강조 시인성 보장) */
         .chip-container {
-            margin-top: 12px;
+            margin-top: 14px;
             display: flex;
             flex-wrap: wrap;
             gap: 8px;
             width: 100%;
         }
         .card-highlight { 
-            color: #FF4D4D !important; 
-            font-weight: 600; 
-            background: #FFF5F5 !important;
-            padding: 6px 14px;
+            color: #E11D48 !important; 
+            font-weight: 700 !important; 
+            background: #FFF1F2 !important;
+            padding: 8px 14px;
             border-radius: 30px;
-            font-size: 0.8rem;
-            border: 1px solid #FFE3E3;
+            font-size: 0.82rem !important;
+            border: 1px solid #FECDD3 !important;
             display: inline-block;
             white-space: nowrap;
-            box-shadow: 0 1px 3px rgba(255, 77, 77, 0.03);
+            box-shadow: 0 2px 4px rgba(225, 29, 72, 0.04);
         }
 
         /* 🔍 근거 스니펫 박스 */
         .evidence-box {
-            background-color: #F8FAFC !important;
-            border-left: 4px solid #FF6B6B !important;
-            padding: 10px 14px !important;
+            background-color: #F1F5F9 !important;
+            border-left: 4px solid #EF4444 !important;
+            padding: 12px 14px !important;
             margin: 6px 0 !important;
             border-radius: 6px;
-            font-size: 0.82rem !important;
-            color: #334155 !important;
-            line-height: 1.5;
+            font-size: 0.85rem !important;
+            color: #1E293B !important;
+            line-height: 1.6;
         }
 
         /* 🔘 입력창 스티키 하단바 및 컴포넌트 터치 최적화 */
@@ -160,17 +163,18 @@ st.markdown("""
         }
         div[data-testid="stChatInput"] textarea {
             border-radius: 14px !important;
-            border: 1px solid #E2E8F0 !important;
+            border: 1px solid #CBD5E1 !important;
             box-shadow: 0 4px 16px rgba(0,0,0,0.06) !important;
-            font-size: 0.92rem !important;
+            font-size: 0.95rem !important;
             padding: 12px !important;
+            color: #0F172A !important;
         }
 
         .sidebar-custom-box {
-            background: linear-gradient(135deg, #FFF5F5 0%, #FFEBEB 100%) !important; 
+            background: linear-gradient(135deg, #FFF1F2 0%, #FFE4E6 100%) !important; 
             border-radius: 12px; 
             padding: 12px; 
-            border: 1px solid #FFD1D1; 
+            border: 1px solid #FDA4AF; 
         }
 
         /* ==========================================
@@ -180,13 +184,13 @@ st.markdown("""
         /* 📱 1. 아이패드 / 미니 / 태블릿 해상도 (세로&가로 환경) */
         @media (min-width: 600px) and (max-width: 1024px) {
             .block-container { padding-left: 6% !important; padding-right: 6% !important; }
-            .title-section-container { padding: 28px 24px; }
+            .title-section-container { padding: 30px 24px; }
             .title-text { font-size: 1.8rem !important; }
-            .subtitle-text { font-size: 0.95rem !important; }
-            .premium-card { padding: 20px; }
-            .card-title { font-size: 1.05rem; }
-            .card-content { font-size: 0.9rem; }
-            .card-highlight { font-size: 0.85rem; padding: 7px 15px; }
+            .subtitle-text { font-size: 0.98rem !important; }
+            .premium-card { padding: 22px; }
+            .card-title { font-size: 1.1rem !important; }
+            .card-content { font-size: 0.92rem !important; }
+            .card-highlight { font-size: 0.88rem !important; padding: 8px 16px; }
         }
 
         /* 💻 2. 일반 PC 및 고해상도 모니터 환경 */
@@ -194,11 +198,11 @@ st.markdown("""
             .block-container { max-width: 900px !important; margin: 0 auto !important; padding-top: 2rem !important; }
             .title-section-container { padding: 36px 40px; text-align: center; }
             .title-text { font-size: 2.2rem !important; }
-            .subtitle-text { font-size: 1.05rem !important; margin-top: 8px; }
-            .premium-card { padding: 24px; }
-            .card-title { font-size: 1.1rem; }
-            .card-content { font-size: 0.92rem; }
-            .card-highlight { font-size: 0.88rem; padding: 8px 16px; }
+            .subtitle-text { font-size: 1.05rem !important; margin-top: 10px; }
+            .premium-card { padding: 26px; }
+            .card-title { font-size: 1.15rem !important; }
+            .card-content { font-size: 0.95rem !important; }
+            .card-highlight { font-size: 0.9rem !important; padding: 8px 18px; }
         }
     </style>
 """, unsafe_allow_html=True)
@@ -347,7 +351,7 @@ with st.sidebar:
     st.markdown("#### 안내사항")
     st.markdown("""
         <div class="sidebar-custom-box">
-            <p style="color: #FF4B4B; margin: 0; font-weight: 600; font-size: 0.85rem; word-break:keep-all;">
+            <p style="color: #E11D48; margin: 0; font-weight: 700; font-size: 0.85rem; word-break:keep-all;">
                 🚨 체육관과 운동장이 없으므로 탁구장, 헬스장, 당구 및 학년별 외부 체육 장소를 우선 가이드합니다.
             </p>
         </div>
