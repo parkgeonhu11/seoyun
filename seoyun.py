@@ -3,6 +3,7 @@ from openai import OpenAI
 from datetime import datetime, timedelta, date
 import os
 import csv
+import re
 import numpy as np
 
 # ==========================================
@@ -24,49 +25,175 @@ except KeyError:
 
 client = OpenAI(api_key=MY_OPENAI_API_KEY)
 
-# 🎨 [기기별 레이아웃 이원화 CSS] PC와 모바일 화면을 완벽 분리하여 제어
+# 🎨 [최종 보정] PC 다크모드 무조건 차단 및 연회색/흰색 강제 고정 스타일
 st.markdown("""
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght=400;500;700;900&display=swap');
 
-        /* 공통 폰트 지정 및 배경 선언 */
-        html, body, [data-testid="stAppViewContainer"], [data-testid="stHeader"], .stApp {
-            font-family: 'Noto Sans KR', sans-serif !important;
-            background-color: #F8FAFC !important;
+        /* 📱 기본 배경 정의 및 가로 스크롤 제거 */
+        html, body, [data-testid="stAppViewContainer"], [data-testid="stHeader"] {
             max-width: 100vw !important;
             overflow-x: hidden !important;
             box-sizing: border-box !important;
+            -webkit-text-size-adjust: none !important;
+            text-size-adjust: none !important;
+            background-color: #F8FAFC !important;
         }
-
-        /* ⚙️ 불필요한 기본 툴바 및 데코 제거 */
+        
+        /* ⚙️ 불필요한 기본 툴바 및 내부 데코레이션 제거 */
         [data-testid="stToolbar"], [data-testid="stDecoration"], #MainMenu, footer {
             display: none !important;
             visibility: hidden !important;
             height: 0 !important;
         }
 
-        /* 🔴 챗봇 메시지 공통 스타일 */
+        /* 🧩 메인 컨테이너 여백 최적화 */
+        .block-container {
+            padding-top: 3.5rem !important;
+            padding-bottom: 9rem !important; 
+            padding-left: 4% !important;
+            padding-right: 4% !important;
+            max-width: 100% !important;
+            box-sizing: border-box !important;
+        }
+
+        /* 전역 폰트 지정 */
+        .stApp, .title-section-container, .premium-card {
+            font-family: 'Noto Sans KR', sans-serif !important;
+        }
+
+        /* 🔴 챗봇 메시지 영역 스타일 */
         [data-testid="stChatMessage"] {
             background-color: #FFFFFF !important;
             border: 1px solid #E2E8F0 !important;
             border-radius: 12px !important;
-            margin-bottom: 8px !important;
-            box-shadow: 0 2px 6px rgba(15, 23, 42, 0.02) !important;
+            margin-bottom: 10px !important;
+            box-shadow: 0 2px 8px rgba(15, 23, 42, 0.02) !important;
         }
-        [data-testid="stChatMessage"] *, [data-testid="stChatMessage"] p, 
-        .stMarkdown div p, [data-testid="stMarkdownContainer"] p {
+        
+        [data-testid="stChatMessage"] *, 
+        [data-testid="stChatMessage"] p, 
+        .stMarkdown div p,
+        [data-testid="stMarkdownContainer"] p {
             color: #0F172A !important;
-            font-size: 0.92rem !important;
-            line-height: 1.5 !important;
+            font-size: 0.95rem !important;
+            line-height: 1.6 !important;
+        }
+
+        /* ✨ 메인 비주얼 배너 */
+        .title-section-container { 
+            padding: 24px 20px; 
+            border-radius: 20px; 
+            background: linear-gradient(135deg, #FF5252 0%, #FF7A45 100%) !important;
+            box-shadow: 0 8px 24px rgba(255, 82, 82, 0.15); 
+            margin-bottom: 20px; 
+            text-align: left; 
+            width: 100%;
+            box-sizing: border-box !important;
+        }
+        .title-text { 
+            color: #FFFFFF !important;
+            font-size: 1.5rem !important; 
+            font-weight: 900 !important; 
+            margin: 0 !important; 
+            padding: 0 !important;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .subtitle-text { 
+            color: #FFFFFF !important;
+            font-size: 0.88rem !important; 
+            font-weight: 500 !important; 
+            margin-top: 8px !important; 
+            margin-bottom: 0 !important; 
+            line-height: 1.4 !important;
+        }
+
+        /* 💎 대시보드형 안내 카드 레이아웃 */
+        .premium-card { 
+            padding: 18px 16px; 
+            background: #FFFFFF !important;
+            border-radius: 18px; 
+            border: 1px solid #E2E8F0; 
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.03); 
+            margin-bottom: 20px; 
+            width: 100%;
+            box-sizing: border-box !important;
+        }
+        .card-title { 
+            font-size: 1.0rem !important; 
+            font-weight: 700 !important; 
+            color: #0F172A !important;
+            margin-bottom: 12px !important; 
+            display: flex; 
+            align-items: center; 
+            gap: 6px; 
+        }
+        .card-content { 
+            font-size: 0.88rem !important; 
+            color: #334155 !important;
+        }
+        
+        /* 📱 추천 질문 태그 칩 */
+        .chip-container {
+            margin-top: 14px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .card-highlight { 
+            color: #E11D48 !important; 
+            font-weight: 700 !important; 
+            background: #FFF1F2 !important;
+            padding: 8px 14px;
+            border-radius: 30px;
+            font-size: 0.82rem !important;
+            border: 1px solid #FECDD3 !important;
         }
 
         /* 🔍 근거 스니펫 박스 */
         .evidence-box {
             background-color: #F1F5F9 !important;
             border-left: 4px solid #EF4444 !important;
-            padding: 10px 12px !important;
+            padding: 12px 14px !important;
             color: #1E293B !important;
-            font-size: 0.82rem !important;
+            font-size: 0.85rem !important;
+        }
+
+        /* 🎯 [강력 수정] 하단 입력창 영역 전체(바깥 바탕부터 안쪽 박스까지) 다크모드 무시하고 밝은 색으로 고정 */
+        div[data-testid="stBottom"],
+        div[data-testid="stBottom"] > div,
+        div[data-testid="stBottomBlockContainer"],
+        div[data-testid="stBottomBlockContainer"] > div,
+        div[data-testid="stChatInput"],
+        div[data-testid="stChatInput"] > div,
+        div[data-testid="stChatInputContainer"],
+        .stChatInputContainer {
+            background-color: #F8FAFC !important;
+            background: #F8FAFC !important;
+            box-shadow: none !important;
+            border: none !important;
+        }
+
+        /* 실제 글씨가 입력되는 텍스트 박스(및 그 부모 baseweb 래퍼) 영역을 PC 다크모드 사양에 상관없이 강제 제어 */
+        div[data-testid="stChatInput"] textarea,
+        div[data-testid="stChatInput"] [data-baseweb="textarea"],
+        div[data-testid="stChatInput"] [data-baseweb="base-input"],
+        .stChatInputContainer textarea,
+        div[data-testid="stChatInput"] [data-testid="stMarkdownContainer"] p {
+            background-color: #FFFFFF !important;
+            background: #FFFFFF !important;
+            color: #0F172A !important;
+            border: 1px solid #CBD5E1 !important;
+            border-radius: 14px !important;
+        }
+        
+        div[data-testid="stChatInput"] textarea::placeholder {
+            color: #94A3B8 !important;
+        }
+
+        /* 전송(화살표) 버튼도 다크 배경으로 안 튀도록 고정 */
+        div[data-testid="stChatInput"] button {
+            background-color: transparent !important;
         }
 
         .sidebar-custom-box {
@@ -75,108 +202,48 @@ st.markdown("""
             padding: 12px; 
         }
 
-        /* ==========================================
-           🖥️ 1. PC 버전에만 적용되는 레이아웃 구조 (화면 너비 1025px 이상)
-           ========================================== */
-        @media (min-width: 1025px) {
-            .block-container { 
-                max-width: 800px !important; 
-                margin: 0 auto !important; 
-                padding-top: 4rem !important; 
-                padding-bottom: 9rem !important;
-            }
-            
-            /* 대시보드형 디자인 그대로 유지 */
-            .title-section-container { 
-                padding: 34px 36px; 
-                border-radius: 20px; 
-                background: linear-gradient(135deg, #FF5252 0%, #FF7A45 100%) !important;
-                margin-bottom: 20px; 
-            }
-            .title-text { color: #FFFFFF !important; font-size: 2.0rem !important; font-weight: 900 !important; }
-            .subtitle-text { color: #FFFFFF !important; font-size: 0.95rem !important; margin-top: 8px !important; }
+        /* =====================================================
+           📐 반응형 레이아웃: 기기(JS)로 분기하지 않고, ChatGPT/Gemini/Claude처럼
+           "구조는 동일하게 유지하되 화면 크기에 맞춰 비율만 스케일링"하는 방식.
+           - 기본값(아래)은 모바일 화면 기준의 콤팩트한 크기
+           - 화면이 커질수록 media query 단계별로 여백/폰트만 비례해서 확대
+           ===================================================== */
 
-            .premium-card { 
-                padding: 24px; background: #FFFFFF !important; border-radius: 18px; 
-                border: 1px solid #E2E8F0; box-shadow: 0 4px 14px rgba(0, 0, 0, 0.03); margin-bottom: 20px; 
-            }
-            .card-title { font-size: 1.05rem !important; font-weight: 700 !important; color: #0F172A !important; margin-bottom: 12px !important; display: flex; align-items: center; gap: 6px; }
-            .card-content { font-size: 0.88rem !important; color: #334155 !important; }
-            .chip-container { margin-top: 14px; display: flex; flex-wrap: wrap; gap: 8px; }
-            .card-highlight { color: #E11D48 !important; font-weight: 700 !important; background: #FFF1F2 !important; padding: 8px 14px; border-radius: 30px; font-size: 0.82rem !important; border: 1px solid #FECDD3 !important; }
-
-            /* PC 다크모드 무력화: 바탕 및 입력 하단부를 연한 회색(#F8FAFC)으로 고정 */
-            div[data-testid="stBottom"],
-            div[data-testid="stBottomBlockContainer"],
-            div[data-testid="stBottomBlockContainer"] > div,
-            .stChatInputContainer {
-                background-color: #F8FAFC !important;
-                background: #F8FAFC !important;
-                box-shadow: none !important;
-                border: none !important;
-                max-width: 800px !important;
-                margin: 0 auto !important;
-            }
-            div[data-testid="stChatInput"] textarea, .stChatInputContainer textarea {
-                background-color: #FFFFFF !important;
-                color: #0F172A !important;
-                border: 1px solid #CBD5E1 !important;
-                border-radius: 14px !important;
-            }
+        /* 아주 작은 모바일 화면(구형 소형 기기): 더 촘촘하게 */
+        @media (max-width: 380px) {
+            .block-container { padding-top: 2.2rem !important; padding-bottom: 7.5rem !important; }
+            .title-section-container { padding: 16px 14px; }
+            .title-text { font-size: 1.2rem !important; }
+            .subtitle-text { font-size: 0.78rem !important; }
+            .premium-card { padding: 14px 12px; }
+            .card-title { font-size: 0.92rem !important; }
+            .card-content { font-size: 0.8rem !important; }
+            .card-highlight { font-size: 0.74rem !important; padding: 6px 10px; }
+            [data-testid="stChatMessage"] p { font-size: 0.88rem !important; }
         }
 
-        /* ==========================================
-           📱 2. 모바일 버전에만 적용되는 초압축 스크롤 프리 레이아웃 (화면 너비 1024px 이하)
-           ========================================== */
-        @media (max-width: 1024px) {
-            /* 한 화면에 다 담기도록 메인 여백 및 높이 통제 */
-            .block-container { 
-                padding-top: 0.8rem !important; 
-                padding-bottom: 5.5rem !important; 
-                padding-left: 12px !important;
-                padding-right: 12px !important;
-            }
+        /* 일반 모바일 (기본값) */
+        @media (min-width: 381px) and (max-width: 767px) {
+            .block-container { padding-top: 2.6rem !important; padding-bottom: 8rem !important; }
+        }
 
-            /* 거대한 비주얼 배너 -> 슬림한 한 줄 타이틀로 완전히 단순화 */
-            .title-section-container { 
-                background: transparent !important;
-                box-shadow: none !important;
-                padding: 4px 0px !important;
-                margin-bottom: 8px !important;
-                border-bottom: 2px solid #FF5252 !important;
-                border-radius: 0px !important;
-            }
-            .title-text { 
-                color: #0F172A !important; 
-                font-size: 1.15rem !important; 
-                font-weight: 900 !important;
-                text-shadow: none !important;
-            }
-            .subtitle-text { display: none !important; } /* 설명 문구 숨김 */
+        /* 태블릿 구간: 모바일과 PC 사이 중간 스케일 */
+        @media (min-width: 768px) and (max-width: 1024px) {
+            .block-container { max-width: 90% !important; margin: 0 auto !important; padding-top: 3.2rem !important; }
+            .title-text { font-size: 1.7rem !important; }
+            .premium-card { padding: 20px; }
+        }
 
-            /* 공간을 크게 차지하던 추천 질문 카드 제거 */
-            .premium-card { 
-                display: none !important; 
-            }
+        /* PC 화면: 중앙 정렬 + 여백/폰트 확대 (구조는 모바일과 동일, 크기만 다름) */
+        @media (min-width: 1025px) {
+            .block-container { max-width: 800px !important; margin: 0 auto !important; padding-top: 4.5rem !important; }
+            .title-section-container { padding: 34px 36px; }
+            .title-text { font-size: 2.0rem !important; }
+            .premium-card { padding: 24px; }
 
-            /* 하단 고정바 영역을 극도로 얇게 축소하여 스크롤 발생을 차단 */
-            div[data-testid="stBottom"] {
-                padding-bottom: 6px !important;
-                background-color: #F8FAFC !important;
-            }
             div[data-testid="stBottomBlockContainer"] {
-                padding: 0px 8px !important;
-                background-color: #F8FAFC !important;
-            }
-            
-            /* 입력창 자체 두께 줄이기 */
-            div[data-testid="stChatInput"] textarea, .stChatInputContainer textarea {
-                background-color: #FFFFFF !important;
-                color: #0F172A !important;
-                border: 1px solid #E2E8F0 !important;
-                border-radius: 10px !important;
-                padding: 8px 12px !important;
-                font-size: 0.88rem !important;
+                max-width: 800px !important;
+                margin: 0 auto !important;
             }
         }
     </style>
@@ -333,7 +400,7 @@ with st.sidebar:
     """, unsafe_allow_html=True)
 
 # ==========================================
-# 4. 👑 메인 인터페이스 레이아웃 (HTML 클래스 매핑)
+# 4. 👑 메인 인터페이스 레이아웃
 # ==========================================
 st.markdown("""
     <div class="title-section-container">
@@ -394,6 +461,17 @@ if user_input := st.chat_input(placeholder="서연 chatbot에게 물어보세요
         target_date = now
         is_asking_specific_day = False
 
+        # 📆 "11월 20일", "11.20", "11/20" 처럼 명시적으로 언급된 날짜 추출
+        explicit_date_mentioned = None
+        date_pattern_match = re.search(r'(\d{1,2})\s*[월./]\s*(\d{1,2})\s*일?', user_input)
+        if date_pattern_match:
+            try:
+                _m, _d = int(date_pattern_match.group(1)), int(date_pattern_match.group(2))
+                _inferred_year = 2027 if _m == 1 else 2026  # 학사일정 범위: 2026.7~2027.1
+                explicit_date_mentioned = date(_inferred_year, _m, _d)
+            except ValueError:
+                explicit_date_mentioned = None
+
         if "오늘" in user_input:
             target_date = now
             is_asking_specific_day = True
@@ -405,6 +483,9 @@ if user_input := st.chat_input(placeholder="서연 chatbot에게 물어보세요
             is_asking_specific_day = True
         elif "어제" in user_input:
             target_date = now - timedelta(days=1)
+            is_asking_specific_day = True
+        elif explicit_date_mentioned:
+            target_date = datetime(explicit_date_mentioned.year, explicit_date_mentioned.month, explicit_date_mentioned.day)
             is_asking_specific_day = True
 
         target_date_only = target_date.date()
@@ -439,7 +520,77 @@ if user_input := st.chat_input(placeholder="서연 chatbot에게 물어보세요
         # 방학 및 연휴 시기 판별
         is_vacation = date(2026, 7, 22) <= target_date_only <= date(2026, 8, 18)
         is_chuseok = date(2026, 9, 24) <= target_date_only <= date(2026, 9, 27)
-        
+
+        # 🗓️ [양방향 학사일정 조회용 인덱스] 이름→날짜 / 날짜→이름 모두 지원
+        SCHOOL_EVENTS = [
+            {"date": date(2026, 7, 17), "name": "제헌절로 인한 휴업일", "keywords": ["제헌절"]},
+            {"date": date(2026, 7, 21), "name": "방학식", "keywords": ["방학식"]},
+            {"date": date(2026, 8, 19), "name": "2학기 개학식", "keywords": ["개학식"]},
+            {"date": date(2026, 8, 27), "name": "동아리 전일제 활동일", "keywords": ["동아리 전일제", "전일제 동아리"]},
+            {"date": date(2026, 9, 17), "name": "동아리 전일제 활동일", "keywords": ["동아리 전일제", "전일제 동아리"]},
+            {"date": date(2026, 10, 5), "name": "대체공휴일", "keywords": ["대체공휴일"]},
+            {"date": date(2026, 10, 7), "name": "금요일 시간표로 변경되어 수업하는 날", "keywords": ["시간표 변경", "금요일 시간표"]},
+            {"date": date(2026, 10, 9), "name": "한글날", "keywords": ["한글날"]},
+            {"date": date(2026, 10, 20), "name": "지필평가(1,2학년 중간고사 / 3학년 기말고사) 1일차", "keywords": ["중간고사"]},
+            {"date": date(2026, 10, 21), "name": "지필평가(1,2학년 중간고사 / 3학년 기말고사) 2일차", "keywords": ["중간고사"]},
+            {"date": date(2026, 10, 22), "name": "동아리 전일제 활동일", "keywords": ["동아리 전일제", "전일제 동아리"]},
+            {"date": date(2026, 11, 19), "name": "수능 재량휴업일", "keywords": ["수능 재량휴업일", "수능"]},
+            {"date": date(2026, 11, 20), "name": "재량휴업일", "keywords": ["재량휴업일"]},
+            {"date": date(2026, 12, 14), "name": "1,2학년 기말고사 1일차", "keywords": ["기말고사"]},
+            {"date": date(2026, 12, 15), "name": "1,2학년 기말고사 2일차", "keywords": ["기말고사"]},
+            {"date": date(2026, 12, 25), "name": "성탄절", "keywords": ["성탄절", "크리스마스"]},
+            {"date": date(2026, 12, 30), "name": "서연제(학교 축제)", "keywords": ["서연제", "축제"]},
+            {"date": date(2027, 1, 1), "name": "신정", "keywords": ["신정"]},
+            {"date": date(2027, 1, 4), "name": "차기 학생회장 선거", "keywords": ["학생회장 선거", "회장 선거"]},
+            {"date": date(2027, 1, 8), "name": "2학기 종업식", "keywords": ["종업식"]},
+        ]
+
+        def find_event_name_by_date(d):
+            names = [ev["name"] for ev in SCHOOL_EVENTS if ev["date"] == d]
+            if names:
+                return ", ".join(dict.fromkeys(names))
+            if date(2026, 7, 22) <= d <= date(2026, 8, 18):
+                return "여름방학 기간"
+            if date(2026, 9, 24) <= d <= date(2026, 9, 27):
+                return "추석 연휴 기간"
+            return None
+
+        def find_events_by_keyword(text):
+            matched = []
+            for ev in SCHOOL_EVENTS:
+                if any(kw in text for kw in ev["keywords"]):
+                    matched.append(ev)
+            return matched
+
+        # 🔎 "OO이 언제야?" 처럼 행사 이름으로 날짜를 되묻는 질문 처리
+        is_asking_when = any(k in user_input for k in ["언제", "며칠", "몇월", "날짜가", "몇일"])
+        event_keyword_matches = find_events_by_keyword(user_input) if is_asking_when else []
+
+        if event_keyword_matches and not explicit_date_mentioned:
+            with st.chat_message("assistant"):
+                seen = set()
+                lines = []
+                for ev in event_keyword_matches:
+                    key = (ev["name"], ev["date"])
+                    if key in seen:
+                        continue
+                    seen.add(key)
+                    lines.append(f"**{ev['date'].strftime('%m월 %d일')}**이 {ev['name']}이야!")
+                full_response = "\n".join(lines)
+                st.write(full_response)
+                st.session_state.messages.append({"role": "assistant", "content": full_response, "contexts": ["학사일정 이벤트명→날짜 역질의"]})
+            st.stop()
+
+        # 🔎 "OO월 OO일이 무슨 날이야?" 처럼 날짜로 행사 이름을 묻는 질문 처리
+        if explicit_date_mentioned and not is_asking_dismissal and not is_asking_lunch:
+            event_name_found = find_event_name_by_date(explicit_date_mentioned)
+            if event_name_found:
+                with st.chat_message("assistant"):
+                    full_response = f"{explicit_date_mentioned.strftime('%m월 %d일')}은 {event_name_found}이야!"
+                    st.write(full_response)
+                    st.session_state.messages.append({"role": "assistant", "content": full_response, "contexts": ["학사일정 날짜→이벤트명 정질의"]})
+                st.stop()
+
         # 🍱 급식 예외 필터 처리
         if is_asking_lunch and is_asking_specific_day:
             with st.chat_message("assistant"):
