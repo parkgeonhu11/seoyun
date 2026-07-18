@@ -49,7 +49,7 @@ st.markdown("""
         /* 🧩 기본 메인 컨테이너 여백 최적화 */
         .block-container {
             padding-top: 1rem !important;
-            padding-bottom: 7rem !important; /* 하단 입력창 높이 고려 여백 확보 */
+            padding-bottom: 8rem !important; /* 하단 공간 충분히 확보 */
             padding-left: 4% !important;
             padding-right: 4% !important;
             max-width: 100% !important;
@@ -163,29 +163,30 @@ st.markdown("""
             line-height: 1.6;
         }
 
-        /* 🔘 🛑 [하단 검은색 바탕 완전 삭제 및 투명화] */
-        div[data-testid="stForm"] > div, 
-        div[data-testid="stChatInput"],
-        div[data-testid="stBottom"],
-        div[data-testid="stBottomBlockContainer"],
-        footer + div,
-        header + div {
-            background-color: transparent !important;
-            background: transparent !important;
+        /* 🔘 🛑 [하단 검은색 완벽 파괴 스타일링] */
+        /* 하단 영역을 감싸는 모든 고정형 컨테이너의 그림자, 배경, 테두리를 완전히 해제하고 연회색 배경 지정 */
+        [data-testid="stBottom"], 
+        [data-testid="stBottomBlockContainer"],
+        .stChatInputContainer,
+        div[style*="position: fixed"] {
+            background-color: #F8FAFC !important;
+            background: #F8FAFC !important;
             box-shadow: none !important;
             border: none !important;
         }
 
-        /* 입력창 폼 자체 패딩 조절 */
+        /* 입력창 폼 감싸는 블록 정렬 */
         div[data-testid="stChatInput"] {
             padding: 10px 0px !important;
+            background-color: transparent !important;
+            background: transparent !important;
         }
 
         /* 실제 텍스트 입력창 디자인 구성 (내부만 흰색 유지) */
         div[data-testid="stChatInput"] textarea {
             border-radius: 14px !important;
             border: 1px solid #CBD5E1 !important;
-            box-shadow: 0 4px 20px rgba(15, 23, 42, 0.08) !important;
+            box-shadow: 0 4px 20px rgba(15, 23, 42, 0.06) !important;
             font-size: 0.95rem !important;
             padding: 12px !important;
             color: #0F172A !important;
@@ -282,7 +283,7 @@ def DEEP_INITIALIZE_RAG_ENGINE():
             ["날짜", "요일", "특이사항", "메뉴"],
             ["7월 1일", "수요일", "일반식단", "강량쌀밥, 육개장, 궁중떡볶, 육원전, 백김치, 블루베리요구르트"],
             ["7월 2일", "목요일", "일반식단", "맑은미역국, 코다리조림, 배추김치, 수박 등"],
-            ["7월 3일", "금요일", "일반식단", "흑미밥, 순살감자탕, 고추파스타&소스, 아삭이기추된장무침, 석박지, 망고요거트"],
+            ["7월 3일", "금요일", "일반식단", "흑미밥, 순살감자탕, 고추파스타&소스, 아삭이고추된장무침, 석박지, 망고요거트"],
             ["7월 6일", "월요일", "일반식단", "칼슘강화쌀밥, 근대된장국, 코다리무조림, 크림감자뇨끼, 오이사과초무침, 총각김치, 체리"],
             ["7월 7일", "화요일", "국 없는 날", "베트남식볶음밥, 석쇠불고기분짜, 짜조, 꼬들단무지무침, 배추김치, 레몬에이드"],
             ["7월 8일", "수요일", "일반식단", "쇠고기콩나물밥&양념간장, 참치김치찌개, 지들레닭구이, 청포묵김무침, 무말랭이김치, 아이스슈"],
@@ -420,8 +421,8 @@ for msg in st.session_state.messages:
 # ==========================================
 # 5. 🤖 실시간 대화 추론 엔진
 # ==========================================
-# 🔘 🛑 [수정 완료] 입력 칸 플레이스홀더 텍스트 변경
-if user_input := st.chat_input("서연 chatbot에게 물어보세요..."):
+# 🎯 [변경 확인] 힌트 문구 매개변수를 완벽하게 기입했습니다.
+if user_input := st.chat_input(placeholder="서연 chatbot에게 물어보세요..."):
     with st.chat_message("user"):
         st.write(user_input)
     st.session_state.messages.append({"role": "user", "content": user_input})
