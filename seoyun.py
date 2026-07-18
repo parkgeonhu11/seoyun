@@ -46,10 +46,10 @@ st.markdown("""
             height: 0 !important;
         }
 
-        /* 🧩 기본 메인 컨테이너 여백 최적화 (모든 기기 반응형 기본형) */
+        /* 🧩 기본 메인 컨테이너 여백 최적화 */
         .block-container {
             padding-top: 1rem !important;
-            padding-bottom: 6rem !important; /* 하단 입력창 겹침 방지 여백 확대 */
+            padding-bottom: 7rem !important; /* 하단 입력창 높이 고려 여백 확보 */
             padding-left: 4% !important;
             padding-right: 4% !important;
             max-width: 100% !important;
@@ -61,14 +61,14 @@ st.markdown("""
             font-family: 'Noto Sans KR', sans-serif !important;
         }
 
-        /* 🔴 [버그 수정] 챗봇 메시지 글씨 안 보임 현상 해결 - 글자색 진한 먹색 고정 */
+        /* 🔴 챗봇 메시지 글씨 진한 먹색 고정 */
         [data-testid="stChatMessage"] p, [data-testid="stChatMessage"] {
             color: #0F172A !important;
             font-size: 0.95rem !important;
             line-height: 1.6 !important;
         }
 
-        /* ✨ 메인 비주얼 배너 (어두운 배경색 상정 고대비 흰색 글씨 전용) */
+        /* ✨ 메인 비주얼 배너 */
         .title-section-container { 
             padding: 24px 20px; 
             border-radius: 20px; 
@@ -101,7 +101,7 @@ st.markdown("""
             opacity: 0.95;
         }
 
-        /* 💎 대시보드형 안내 카드 레이아웃 (흰 배경 위 아주 진한 먹색 글씨 전용) */
+        /* 💎 대시보드형 안내 카드 레이아웃 */
         .premium-card { 
             padding: 18px 16px; 
             background: #FFFFFF !important;
@@ -130,7 +130,7 @@ st.markdown("""
             word-break: keep-all;
         }
         
-        /* 📱 추천 질문 태그 칩 레이아웃 (붉은 텍스트 컬러 강조 시인성 보장) */
+        /* 📱 추천 질문 태그 칩 레이아웃 */
         .chip-container {
             margin-top: 14px;
             display: flex;
@@ -163,18 +163,31 @@ st.markdown("""
             line-height: 1.6;
         }
 
-        /* 🔘 [모바일 최적화] 입력창 스티키 하단바 고정 및 입력 컴포넌트 터치 최적화 */
+        /* 🔘 🛑 [수정 사항] 하단 검은색 바탕 제거 및 완전 투명/배경 통합화 */
         div[data-testid="stChatInput"] {
-            padding: 8px 0px !important;
-            background-color: #F8FAFC !important;
+            padding: 10px 0px !important;
+            background-color: transparent !important; /* 배경색 투명으로 강제 */
+            background: transparent !important;
         }
+        
+        /* 하단 입력창을 받치고 있는 고정 컨테이너의 검은 오버레이 삭제 */
+        div[data-testid="stBottom"] {
+            background-color: transparent !important;
+            background: transparent !important;
+        }
+        div[data-testid="stBottomBlockContainer"] {
+            background-color: transparent !important;
+            background: transparent !important;
+        }
+
         div[data-testid="stChatInput"] textarea {
             border-radius: 14px !important;
             border: 1px solid #CBD5E1 !important;
-            box-shadow: 0 -4px 16px rgba(0,0,0,0.04) !important;
+            box-shadow: 0 4px 20px rgba(15, 23, 42, 0.08) !important;
             font-size: 0.95rem !important;
             padding: 12px !important;
             color: #0F172A !important;
+            background-color: #FFFFFF !important; /* 입력 칸 내부만 흰색 유지 */
         }
 
         .sidebar-custom-box {
@@ -187,8 +200,6 @@ st.markdown("""
         /* ==========================================
             🎯 해상도별 정밀 브레이크포인트 대응 분기
            ========================================== */
-        
-        /* 📱 1. 아이패드 / 미니 / 태블릿 해상도 (세로&가로 환경) */
         @media (min-width: 600px) and (max-width: 1024px) {
             .block-container { padding-left: 6% !important; padding-right: 6% !important; }
             .title-section-container { padding: 30px 24px; }
@@ -200,7 +211,6 @@ st.markdown("""
             .card-highlight { font-size: 0.88rem !important; padding: 8px 16px; }
         }
 
-        /* 💻 2. 일반 PC 및 고해상도 모니터 환경 */
         @media (min-width: 1025px) {
             .block-container { max-width: 900px !important; margin: 0 auto !important; padding-top: 2rem !important; }
             .title-section-container { padding: 36px 40px; text-align: center; }
@@ -406,7 +416,7 @@ for msg in st.session_state.messages:
                     st.markdown(f'<div class="evidence-box">{source}</div>', unsafe_allow_html=True)
 
 # ==========================================
-# 5. 🤖 실시간 대화 추론 엔진 (정밀 학사일정 및 하교 예외 처리 결합)
+# 5. 🤖 실시간 대화 추론 엔진
 # ==========================================
 if user_input := st.chat_input("Gemini에 무엇이든 물어보세요..."):
     with st.chat_message("user"):
@@ -443,16 +453,12 @@ if user_input := st.chat_input("Gemini에 무엇이든 물어보세요..."):
 
         # 📅 [2026-2027 학사일정 데이터 세트 정의]
         CLUB_DAYS = {date(2026, 8, 27), date(2026, 9, 17), date(2026, 10, 22)}
-        NEXT_CLUB_DAYS = {day + timedelta(weeks=1) for day in CLUB_DAYS}  # 동아리 다음 주 목요일 연산
+        NEXT_CLUB_DAYS = {day + timedelta(weeks=1) for day in CLUB_DAYS}
 
-        # 🛑 쉬는 날 (휴업일 / 공공 공휴일)
+        # 🛑 쉬는 날
         HOLIDAYS = {
-            date(2026, 10, 5),   # 대체공휴일
-            date(2026, 10, 9),   # 한글날
-            date(2026, 11, 19),  # 수능 재량휴업일
-            date(2026, 11, 20),  # 재량휴업일
-            date(2026, 12, 25),  # 성탄절
-            date(2027, 1, 1)     # 신정
+            date(2026, 10, 5), date(2026, 10, 9), date(2026, 11, 19),
+            date(2026, 11, 20), date(2026, 12, 25), date(2027, 1, 1)
         }
         
         # 📝 특수 일정
@@ -468,7 +474,7 @@ if user_input := st.chat_input("Gemini에 무엇이든 물어보세요..."):
             date(2027, 1, 8): "2학기 종업식을 하는 날이야!"
         }
 
-        # 🛑 예외 예측 레이어 A: 주말 및 공휴일/방학 급식 필터링
+        # 🛑 예외 예측 레이어 A
         is_vacation = date(2026, 7, 22) <= target_date_only <= date(2026, 8, 18)
         is_chuseok = date(2026, 9, 24) <= target_date_only <= date(2026, 9, 27)
         
@@ -487,19 +493,18 @@ if user_input := st.chat_input("Gemini에 무엇이든 물어보세요..."):
                 elif target_date_only == date(2026, 7, 21):
                     full_response = "7월 21일은 방학식 날이라서 급식이 제공되지 않는 날이야!"
                 else:
-                    is_asking_lunch = False  # 일반 급식 처리 RAG 연계 처리로 넘김
+                    is_asking_lunch = False
 
                 if 'full_response' in locals():
                     st.write(full_response)
                     st.session_state.messages.append({"role": "assistant", "content": full_response, "contexts": ["학사일정 급식 예외 필터"]})
                     st.stop()
 
-        # 🕒 예외 예측 레이어 B: 하교 시간에 대한 정밀 알고리즘 엔진
+        # 🕒 예외 예측 레이어 B
         if is_asking_dismissal and is_asking_specific_day:
             with st.chat_message("assistant"):
                 target_weekday = target_date.weekday()
                 
-                # 1단계: 학교 안 가는 날 (주말, 방학, 추석, 지정 공휴일)
                 if target_weekday in [5, 6]:
                     full_response = "주말이라 학교에 안 가니까 하교 시간도 따로 없어! 🛌"
                 elif is_vacation:
@@ -508,31 +513,25 @@ if user_input := st.chat_input("Gemini에 무엇이든 물어보세요..."):
                     full_response = "추석 연휴라서 학교에 가지 않는 날이야! 🌾"
                 elif target_date_only in HOLIDAYS:
                     full_response = f"학교가 쉬는 날(공휴일/재량휴업일)이라 하교 시간이 없는 날이야! 🎈"
-                
-                # 2단계: 특수 일정이 있는 날 안내
                 elif target_date_only in SPECIAL_SCHEDULES:
                     full_response = SPECIAL_SCHEDULES[target_date_only]
-                
-                # 3단계: 정규 요일별 하교 시간 로직 전개 (4시 하교 / 3시 하교 완벽 분류)
                 else:
-                    if target_weekday == 1:  # 화요일 7교시 -> 4시
+                    if target_weekday == 1:
                         full_response = f"화요일은 정규 7교시 수업을 진행하니까 **오후 4시**에 하교해! 🏫"
-                    
-                    elif target_weekday == 3:  # 목요일 조건문
+                    elif target_weekday == 3:
                         if target_date_only in CLUB_DAYS:
                             full_response = f"목요일({target_date.strftime('%m월 %d일')})은 **동아리 활동이 있는 날**이라 7교시로 진행되어 **오후 4시**에 하교해! 🎸"
                         elif target_date_only in NEXT_CLUB_DAYS:
                             full_response = f"목요일({target_date.strftime('%m월 %d일')})은 **동아리 활동을 했던 다음 주 목요일**이라 한 교시가 더해진 7교시날이라서 **오후 4시**에 하교해! ✍️"
                         else:
                             full_response = f"일반적인 목요일은 6교시 수업이라 **오후 3시**에 하교해! 🏃"
-                    
-                    else:  # 월, 수, 금 6교시 -> 3시
+                    else:
                         full_response = f"질문한 {weekday_map[target_weekday]}은 정규 6교시 수업을 진행하니까 **오후 3시**에 하교하는 날이야! 🏃"
                 
                 st.write(full_response)
                 st.session_state.messages.append({"role": "assistant", "content": full_response, "contexts": ["실시간 정밀 하교 예측 알고리즘"]})
 
-        # 🧠 3. 일반적인 학칙 및 RAG 질문 처리 단계 (벡터 유사도 연산 연동)
+        # 🧠 3. 일반적인 학칙 및 RAG 질문 처리 단계
         else:
             DYNAMIC_CONTEXT, matched_chunks = retrieve_relevant_context_openai(user_input, ALL_CHUNKS, EMBEDDING_MATRIX, top_n=3)
 
