@@ -172,9 +172,10 @@ st.markdown("""
             line-height: 1.6;
         }
 
-        /* 🔘 🛑 [구조 롤백 및 정밀 복구] 하단 프레임 영역 컬러 융합 */
+        /* 🔘 🛑 [PC 검은색 바 차단 해결 보정] 하단 고정 요소 영역 배경 강제 동기화 */
         div[data-testid="stBottom"],
         div[data-testid="stBottomBlockContainer"],
+        div[data-testid="stBottomBlockContainer"] > div,
         div[style*="position: fixed"] {
             background-color: #F8FAFC !important;
             background: #F8FAFC !important;
@@ -193,7 +194,7 @@ st.markdown("""
             background: transparent !important;
         }
 
-        /* 🎯 실제 글자가 적히는 하단 박스 영역을 흰색(#FFFFFF)으로 최우선 강제 지정 */
+        /* 실제 글자가 적히는 하단 박스 영역을 흰색(#FFFFFF)으로 강제 지정 */
         div[data-testid="stChatInput"] textarea,
         .stChatInputContainer textarea {
             display: block !important;
@@ -480,20 +481,24 @@ if user_input := st.chat_input(placeholder="서연 chatbot에게 물어보세요
 
         target_date_only = target_date.date()
 
-        # 📅 [2026-2027 학사일정 데이터 세트 정의]
+        # 📅 [2026-2027 학사일정 완벽 데이터 레이어 구축]
         CLUB_DAYS = {date(2026, 8, 27), date(2026, 9, 17), date(2026, 10, 22)}
         NEXT_CLUB_DAYS = {day + timedelta(weeks=1) for day in CLUB_DAYS}
 
-        # 🛑 쉬는 날
+        # 🛑 쉬는 날 (휴업일 및 공휴일)
         HOLIDAYS = {
-            date(2026, 10, 5), date(2026, 10, 9), date(2026, 11, 19),
-            date(2026, 11, 20), date(2026, 12, 25), date(2027, 1, 1)
+            date(2026, 10, 5),   # 대체공휴일
+            date(2026, 10, 9),   # 한글날
+            date(2026, 11, 19),  # 수능 재량휴업일
+            date(2026, 11, 20),  # 재량휴업일
+            date(2026, 12, 25),  # 성탄절
+            date(2027, 1, 1)     # 신정
         }
         
-        # 📝 특수 일정
+        # 📝 특수 시간표 일정 메시지 정의
         SPECIAL_SCHEDULES = {
             date(2026, 8, 19): "2학기 개학식을 진행하는 날이야!",
-            date(2026, 10, 7): "금요일 시간표로 수업을 변경해서 진행하는 날이야!",
+            date(2026, 10, 7): "수요일이지만 금요일 시간표로 수업을 변경해서 진행하는 날이야!",
             date(2026, 10, 20): "1,2학년은 중간고사, 3학년은 기말고사를 치르는 지필평가 기간이야! 시험 일정이 끝나면 바로 하교해.",
             date(2026, 10, 21): "1,2학년은 중간고사, 3학년은 기말고사를 치르는 지필평가 기간이야! 시험 일정이 끝나면 바로 하교해.",
             date(2026, 12, 14): "1,2학년 기말고사 시험을 보는 날이야! 시험 일정이 끝나면 바로 하교해.",
@@ -503,10 +508,11 @@ if user_input := st.chat_input(placeholder="서연 chatbot에게 물어보세요
             date(2027, 1, 8): "2학기 종업식을 하는 날이야!"
         }
 
-        # 🛑 예외 예측 레이어 A
+        # 방학 및 연휴 시기 판별
         is_vacation = date(2026, 7, 22) <= target_date_only <= date(2026, 8, 18)
         is_chuseok = date(2026, 9, 24) <= target_date_only <= date(2026, 9, 27)
         
+        # 🍱 급식 예외 필터 처리
         if is_asking_lunch and is_asking_specific_day:
             with st.chat_message("assistant"):
                 if target_date.weekday() in [5, 6]:
@@ -529,7 +535,7 @@ if user_input := st.chat_input(placeholder="서연 chatbot에게 물어보세요
                     st.session_state.messages.append({"role": "assistant", "content": full_response, "contexts": ["학사일정 급식 예외 필터"]})
                     st.stop()
 
-        # 🕒 예외 예측 레이어 B
+        # 🕒 하교시간 조건 정밀 판별 처리 (우선순위 최고 적용)
         if is_asking_dismissal and is_asking_specific_day:
             with st.chat_message("assistant"):
                 target_weekday = target_date.weekday()
@@ -545,16 +551,17 @@ if user_input := st.chat_input(placeholder="서연 chatbot에게 물어보세요
                 elif target_date_only in SPECIAL_SCHEDULES:
                     full_response = SPECIAL_SCHEDULES[target_date_only]
                 else:
-                    if target_weekday == 1:
+                    # 요일 및 특수 목요일 분기 추적
+                    if target_weekday == 1: # 화요일
                         full_response = f"화요일은 정규 7교시 수업을 진행하니까 **오후 4시**에 하교해! 🏫"
-                    elif target_weekday == 3:
+                    elif target_weekday == 3: # 목요일
                         if target_date_only in CLUB_DAYS:
                             full_response = f"목요일({target_date.strftime('%m월 %d일')})은 **동아리 활동이 있는 날**이라 7교시로 진행되어 **오후 4시**에 하교해! 🎸"
                         elif target_date_only in NEXT_CLUB_DAYS:
                             full_response = f"목요일({target_date.strftime('%m월 %d일')})은 **동아리 활동을 했던 다음 주 목요일**이라 한 교시가 더해진 7교시날이라서 **오후 4시**에 하교해! ✍️"
                         else:
                             full_response = f"일반적인 목요일은 6교시 수업이라 **오후 3시**에 하교해! 🏃"
-                    else:
+                    else: # 월, 수, 금 일반요일
                         full_response = f"질문한 {weekday_map[target_weekday]}은 정규 6교시 수업을 진행하니까 **오후 3시**에 하교하는 날이야! 🏃"
                 
                 st.write(full_response)
