@@ -49,7 +49,7 @@ st.markdown("""
         /* 🧩 기본 메인 컨테이너 여백 최적화 */
         .block-container {
             padding-top: 1rem !important;
-            padding-bottom: 8rem !important; /* 하단 공간 충분히 확보 */
+            padding-bottom: 9rem !important; /* 하단 입력창 높이 고려 여백 넉넉히 확보 */
             padding-left: 4% !important;
             padding-right: 4% !important;
             max-width: 100% !important;
@@ -61,8 +61,16 @@ st.markdown("""
             font-family: 'Noto Sans KR', sans-serif !important;
         }
 
-        /* 🔴 챗봇 메시지 글씨 진한 먹색 고정 */
-        [data-testid="stChatMessage"] p, [data-testid="stChatMessage"] {
+        /* 🔴 [최종 해결] 챗봇 메시지 폰트 가시성 200% 확보 강제 조치 */
+        [data-testid="stChatMessage"] {
+            background-color: #FFFFFF !important;
+            border: 1px solid #E2E8F0 !important;
+            border-radius: 12px !important;
+            margin-bottom: 10px !important;
+        }
+        [data-testid="stChatMessage"] *, 
+        [data-testid="stChatMessage"] p, 
+        .stMarkdown div p {
             color: #0F172A !important;
             font-size: 0.95rem !important;
             line-height: 1.6 !important;
@@ -163,8 +171,8 @@ st.markdown("""
             line-height: 1.6;
         }
 
-        /* 🔘 🛑 [하단 검은색 완벽 파괴 스타일링] */
-        /* 하단 영역을 감싸는 모든 고정형 컨테이너의 그림자, 배경, 테두리를 완전히 해제하고 연회색 배경 지정 */
+        /* 🔘 🛑 [하단 오버레이 검은 바탕 무조건 파괴 및 투명 제거 조치] */
+        /* 고정 위치 레이어 자체의 블러 및 어두운 배경 제거 후 기본 배경색 지정 */
         [data-testid="stBottom"], 
         [data-testid="stBottomBlockContainer"],
         .stChatInputContainer,
@@ -175,22 +183,27 @@ st.markdown("""
             border: none !important;
         }
 
-        /* 입력창 폼 감싸는 블록 정렬 */
+        /* 입력 폼 패딩 최적화 */
         div[data-testid="stChatInput"] {
-            padding: 10px 0px !important;
+            padding: 12px 0px !important;
             background-color: transparent !important;
-            background: transparent !important;
         }
 
-        /* 실제 텍스트 입력창 디자인 구성 (내부만 흰색 유지) */
+        /* 입력창 내부 요소 폰트 및 배경 강제 흰색 지정 */
         div[data-testid="stChatInput"] textarea {
             border-radius: 14px !important;
             border: 1px solid #CBD5E1 !important;
-            box-shadow: 0 4px 20px rgba(15, 23, 42, 0.06) !important;
+            box-shadow: 0 4px 20px rgba(15, 23, 42, 0.05) !important;
             font-size: 0.95rem !important;
             padding: 12px !important;
             color: #0F172A !important;
             background-color: #FFFFFF !important;
+        }
+        
+        /* 플레이스홀더(힌트문구) 색상 보정 */
+        div[data-testid="stChatInput"] textarea::placeholder {
+            color: #94A3B8 !important;
+            opacity: 1 !important;
         }
 
         .sidebar-custom-box {
@@ -421,7 +434,7 @@ for msg in st.session_state.messages:
 # ==========================================
 # 5. 🤖 실시간 대화 추론 엔진
 # ==========================================
-# 🎯 [변경 확인] 힌트 문구 매개변수를 완벽하게 기입했습니다.
+# 🎯 [반영 보장] 힌트 문구 매개변수를 placeholder 파라미터로 정확히 주입했습니다.
 if user_input := st.chat_input(placeholder="서연 chatbot에게 물어보세요..."):
     with st.chat_message("user"):
         st.write(user_input)
@@ -510,7 +523,7 @@ if user_input := st.chat_input(placeholder="서연 chatbot에게 물어보세요
                 target_weekday = target_date.weekday()
                 
                 if target_weekday in [5, 6]:
-                    full_response = "주말이라 학교에 안 가니까 하교 시간도 따로 없어! 🛌"
+                    full_response = "주말이라 School에 안 가니까 하교 시간도 따로 없어! 🛌"
                 elif is_vacation:
                     full_response = "여름방학 기간(7/22 ~ 8/18)이라 학교에 등교하지 않는 날이야! 🏖️"
                 elif is_chuseok:
