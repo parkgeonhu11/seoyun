@@ -467,7 +467,7 @@ if user_input := st.chat_input(placeholder="서연 chatbot에게 물어보세요
         if date_pattern_match:
             try:
                 _m, _d = int(date_pattern_match.group(1)), int(date_pattern_match.group(2))
-                _inferred_year = 2027 if _m == 1 else 2026  # 학사일정 범위: 2026.7~2027.1
+                _inferred_year = 2027 if _m <= 3 else 2026  # 학사일정 범위: 2026.7~2027.3(새 학년도 개학식 3/2 포함)
                 explicit_date_mentioned = date(_inferred_year, _m, _d)
             except ValueError:
                 explicit_date_mentioned = None
@@ -494,15 +494,17 @@ if user_input := st.chat_input(placeholder="서연 chatbot에게 물어보세요
         CLUB_DAYS = {date(2026, 8, 27), date(2026, 9, 17), date(2026, 10, 22)}
         NEXT_CLUB_DAYS = {day + timedelta(weeks=1) for day in CLUB_DAYS}
 
-        # 🛑 쉬는 날 (휴업일 및 공휴일)
-        HOLIDAYS = {
-            date(2026, 10, 5),   # 대체공휴일
-            date(2026, 10, 9),   # 한글날
-            date(2026, 11, 19),  # 수능 재량휴업일
-            date(2026, 11, 20),  # 재량휴업일
-            date(2026, 12, 25),  # 성탄절
-            date(2027, 1, 1)     # 신정
+        # 🛑 쉬는 날 (휴업일 및 공휴일) - 날짜별 정확한 이름까지 함께 관리
+        HOLIDAY_NAMES = {
+            date(2026, 7, 17): "제헌절 휴업일",
+            date(2026, 10, 5): "대체공휴일",
+            date(2026, 10, 9): "한글날",
+            date(2026, 11, 19): "수능 재량휴업일",
+            date(2026, 11, 20): "재량휴업일",
+            date(2026, 12, 25): "성탄절",
+            date(2027, 1, 1): "신정",
         }
+        HOLIDAYS = set(HOLIDAY_NAMES.keys())
         
         # 📝 특수 시간표 일정 메시지 정의
         SPECIAL_SCHEDULES = {
@@ -517,9 +519,24 @@ if user_input := st.chat_input(placeholder="서연 chatbot에게 물어보세요
             date(2027, 1, 8): "2학기 종업식을 하는 날이야!"
         }
 
-        # 방학 및 연휴 시기 판별
+        # 방학 및 연휴 시기 판별 (겨울방학: 종업식(1/8) 다음날 ~ 새 학년도 개학식(3/2) 전날)
         is_vacation = date(2026, 7, 22) <= target_date_only <= date(2026, 8, 18)
         is_chuseok = date(2026, 9, 24) <= target_date_only <= date(2026, 9, 27)
+        is_winter_vacation = date(2027, 1, 9) <= target_date_only <= date(2027, 3, 1)
+
+        def get_day_off_reason(d):
+            """해당 날짜가 쉬는 날이면 이유를 문자열로, 아니면 None을 반환"""
+            if d.weekday() in (5, 6):
+                return "주말"
+            if date(2026, 7, 22) <= d <= date(2026, 8, 18):
+                return "여름방학 기간"
+            if date(2026, 9, 24) <= d <= date(2026, 9, 27):
+                return "추석 연휴 기간"
+            if date(2027, 1, 9) <= d <= date(2027, 3, 1):
+                return "겨울방학 기간"
+            if d in HOLIDAY_NAMES:
+                return HOLIDAY_NAMES[d]
+            return None
 
         # 🗓️ [양방향 학사일정 조회용 인덱스] 이름→날짜 / 날짜→이름 모두 지원
         SCHOOL_EVENTS = [
@@ -543,16 +560,18 @@ if user_input := st.chat_input(placeholder="서연 chatbot에게 물어보세요
             {"date": date(2027, 1, 1), "name": "신정", "keywords": ["신정"]},
             {"date": date(2027, 1, 4), "name": "차기 학생회장 선거", "keywords": ["학생회장 선거", "회장 선거"]},
             {"date": date(2027, 1, 8), "name": "2학기 종업식", "keywords": ["종업식"]},
+            {"date": date(2027, 3, 2), "name": "새 학년도 개학식(화요일)", "keywords": ["새 학년도 개학식", "새학년도 개학식", "새 학기 개학식", "3월 개학식"]},
         ]
 
         def find_event_name_by_date(d):
             names = [ev["name"] for ev in SCHOOL_EVENTS if ev["date"] == d]
+            off_reason = get_day_off_reason(d)
+            if off_reason and off_reason not in ("주말",) and off_reason not in names:
+                names.append(off_reason)
             if names:
                 return ", ".join(dict.fromkeys(names))
-            if date(2026, 7, 22) <= d <= date(2026, 8, 18):
-                return "여름방학 기간"
-            if date(2026, 9, 24) <= d <= date(2026, 9, 27):
-                return "추석 연휴 기간"
+            if off_reason:
+                return off_reason
             return None
 
         def find_events_by_keyword(text):
@@ -562,11 +581,54 @@ if user_input := st.chat_input(placeholder="서연 chatbot에게 물어보세요
                     matched.append(ev)
             return matched
 
-        # 🔎 "OO이 언제야?" 처럼 행사 이름으로 날짜를 되묻는 질문 처리
-        is_asking_when = any(k in user_input for k in ["언제", "며칠", "몇월", "날짜가", "몇일"])
-        event_keyword_matches = find_events_by_keyword(user_input) if is_asking_when else []
+        # 🗓️ "쉬는 날/노는 날 다 알려줘" 처럼 전체 휴무 일정을 한번에 묻는 질문 처리
+        is_asking_all_offdays = (
+            any(p in user_input for p in [
+                "쉬는 날", "쉬는날", "노는 날", "노는날", "안 가는 날", "안가는날",
+                "휴일 목록", "쉬는 날짜", "쉬는날짜", "쉬는날들", "쉬는 날들"
+            ])
+            or ("쉬는" in user_input and ("전부" in user_input or "모두" in user_input or "다" in user_input))
+            or ("휴일" in user_input and ("전부" in user_input or "모두" in user_input or "목록" in user_input))
+        )
 
-        if event_keyword_matches and not explicit_date_mentioned:
+        if is_asking_all_offdays:
+            with st.chat_message("assistant"):
+                full_response = (
+                    "쉬는 날 싹 다 정리해줄게! 🗓️\n"
+                    "- 여름방학: 7월 22일 ~ 8월 18일\n"
+                    "- 제헌절 휴업일: 7월 17일\n"
+                    "- 추석 연휴: 9월 24일 ~ 9월 27일\n"
+                    "- 대체공휴일: 10월 5일\n"
+                    "- 한글날: 10월 9일\n"
+                    "- 수능 재량휴업일: 11월 19일\n"
+                    "- 재량휴업일: 11월 20일\n"
+                    "- 성탄절: 12월 25일\n"
+                    "- 신정: 1월 1일\n"
+                    "- 겨울방학: 1월 9일 ~ 3월 1일 (새 학년도 개학식인 3월 2일 화요일 전날까지)\n"
+                    "- 그리고 매주 토요일, 일요일도 당연히 쉬는 날이야! 🛌"
+                )
+                st.write(full_response)
+                st.session_state.messages.append({"role": "assistant", "content": full_response, "contexts": ["학사일정 전체 휴무일 조회"]})
+            st.stop()
+
+        # 🗓️ "OO월 OO일은 무슨 요일이야?" 처럼 특정 날짜의 요일을 묻는 질문 처리
+        is_asking_weekday = "요일" in user_input and is_asking_specific_day
+
+        if is_asking_weekday:
+            with st.chat_message("assistant"):
+                weekday_name = weekday_map[target_date.weekday()]
+                full_response = f"{target_date.strftime('%m월 %d일')}은 **{weekday_name}**이야!"
+                off_reason = get_day_off_reason(target_date_only)
+                if off_reason:
+                    full_response += f" ({off_reason}이라 학교는 쉬는 날이야!)"
+                st.write(full_response)
+                st.session_state.messages.append({"role": "assistant", "content": full_response, "contexts": ["요일 계산"]})
+            st.stop()
+
+        # 🔎 "OO이 언제야?" 처럼 행사 이름으로 날짜를 되묻는 질문 처리 (급식/하교 질문과는 별개로 처리)
+        event_keyword_matches = find_events_by_keyword(user_input)
+
+        if event_keyword_matches and not explicit_date_mentioned and not is_asking_lunch and not is_asking_dismissal:
             with st.chat_message("assistant"):
                 seen = set()
                 lines = []
@@ -594,16 +656,17 @@ if user_input := st.chat_input(placeholder="서연 chatbot에게 물어보세요
         # 🍱 급식 예외 필터 처리
         if is_asking_lunch and is_asking_specific_day:
             with st.chat_message("assistant"):
-                if target_date.weekday() in [5, 6]:
+                off_reason = get_day_off_reason(target_date_only)
+                if off_reason == "주말":
                     full_response = f"질문한 날짜({target_date.strftime('%m월 %d일')})는 주말이라 급식이 없어! 주말엔 맛있는 거 챙겨 먹어. ☀️"
-                elif is_vacation:
-                    full_response = f"질문한 기간은 여름방학 기간(7/22 ~ 8/18)이라서 학교 급식이 운영되지 않는 시기야! 🏖️"
-                elif is_chuseok:
-                    full_response = f"질문한 기간은 추석 연휴라 학교 급식이 없어! 맛있는 명절 명절 음식 많이 먹어. 🌾"
-                elif target_date_only in HOLIDAYS:
-                    full_response = f"질문한 날짜({target_date.strftime('%m월 %d일')})는 학교가 쉬는 공휴일/휴업일이라 급식이 제공되지 않는 날이야!"
-                elif target_date_only == date(2026, 7, 17):
-                    full_response = "7월 17일은 제헌절로 인한 휴업일이라 급식이 제공되지 않아!"
+                elif off_reason == "여름방학 기간":
+                    full_response = "질문한 기간은 여름방학 기간(7/22 ~ 8/18)이라서 학교 급식이 운영되지 않는 시기야! 🏖️"
+                elif off_reason == "추석 연휴 기간":
+                    full_response = "질문한 기간은 추석 연휴라 학교 급식이 없어! 맛있는 명절 음식 많이 먹어. 🌾"
+                elif off_reason == "겨울방학 기간":
+                    full_response = "질문한 기간은 겨울방학 기간(1/9 ~ 3/1)이라서 학교 급식이 운영되지 않는 시기야! ❄️"
+                elif off_reason:
+                    full_response = f"질문한 날짜({target_date.strftime('%m월 %d일')})는 {off_reason}이라 급식이 제공되지 않는 날이야!"
                 elif target_date_only == date(2026, 7, 21):
                     full_response = "7월 21일은 방학식 날이라서 급식이 제공되지 않는 날이야!"
                 else:
@@ -618,15 +681,18 @@ if user_input := st.chat_input(placeholder="서연 chatbot에게 물어보세요
         if is_asking_dismissal and is_asking_specific_day:
             with st.chat_message("assistant"):
                 target_weekday = target_date.weekday()
-                
-                if target_weekday in [5, 6]:
+                off_reason = get_day_off_reason(target_date_only)
+
+                if off_reason == "주말":
                     full_response = "주말이라 학교에 안 가니까 하교 시간도 따로 없어! 🛌"
-                elif is_vacation:
+                elif off_reason == "여름방학 기간":
                     full_response = "여름방학 기간(7/22 ~ 8/18)이라 학교에 등교하지 않는 날이야! 🏖️"
-                elif is_chuseok:
+                elif off_reason == "추석 연휴 기간":
                     full_response = "추석 연휴라서 학교에 가지 않는 날이야! 🌾"
-                elif target_date_only in HOLIDAYS:
-                    full_response = f"학교가 쉬는 날(공휴일/재량휴업일)이라 하교 시간이 없는 날이야! 🎈"
+                elif off_reason == "겨울방학 기간":
+                    full_response = "겨울방학 기간(1/9 ~ 3/1)이라 학교에 등교하지 않는 날이야! ❄️"
+                elif off_reason:
+                    full_response = f"{off_reason}이라 하교 시간이 없는, 학교에 안 가는 날이야! 🎈"
                 elif target_date_only in SPECIAL_SCHEDULES:
                     full_response = SPECIAL_SCHEDULES[target_date_only]
                 else:
