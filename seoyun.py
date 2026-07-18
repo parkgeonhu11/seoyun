@@ -24,164 +24,49 @@ except KeyError:
 
 client = OpenAI(api_key=MY_OPENAI_API_KEY)
 
-# 🎨 [최종 보정] PC 다크모드 무조건 차단 및 연회색/흰색 강제 고정 스타일
+# 🎨 [기기별 레이아웃 이원화 CSS] PC와 모바일 화면을 완벽 분리하여 제어
 st.markdown("""
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght=400;500;700;900&display=swap');
 
-        /* 📱 기본 배경 정의 및 가로 스크롤 제거 */
-        html, body, [data-testid="stAppViewContainer"], [data-testid="stHeader"] {
+        /* 공통 폰트 지정 및 배경 선언 */
+        html, body, [data-testid="stAppViewContainer"], [data-testid="stHeader"], .stApp {
+            font-family: 'Noto Sans KR', sans-serif !important;
+            background-color: #F8FAFC !important;
             max-width: 100vw !important;
             overflow-x: hidden !important;
             box-sizing: border-box !important;
-            -webkit-text-size-adjust: none !important;
-            text-size-adjust: none !important;
-            background-color: #F8FAFC !important;
         }
-        
-        /* ⚙️ 불필요한 기본 툴바 및 내부 데코레이션 제거 */
+
+        /* ⚙️ 불필요한 기본 툴바 및 데코 제거 */
         [data-testid="stToolbar"], [data-testid="stDecoration"], #MainMenu, footer {
             display: none !important;
             visibility: hidden !important;
             height: 0 !important;
         }
 
-        /* 🧩 메인 컨테이너 여백 최적화 */
-        .block-container {
-            padding-top: 3.5rem !important;
-            padding-bottom: 9rem !important; 
-            padding-left: 4% !important;
-            padding-right: 4% !important;
-            max-width: 100% !important;
-            box-sizing: border-box !important;
-        }
-
-        /* 전역 폰트 지정 */
-        .stApp, .title-section-container, .premium-card {
-            font-family: 'Noto Sans KR', sans-serif !important;
-        }
-
-        /* 🔴 챗봇 메시지 영역 스타일 */
+        /* 🔴 챗봇 메시지 공통 스타일 */
         [data-testid="stChatMessage"] {
             background-color: #FFFFFF !important;
             border: 1px solid #E2E8F0 !important;
             border-radius: 12px !important;
-            margin-bottom: 10px !important;
-            box-shadow: 0 2px 8px rgba(15, 23, 42, 0.02) !important;
+            margin-bottom: 8px !important;
+            box-shadow: 0 2px 6px rgba(15, 23, 42, 0.02) !important;
         }
-        
-        [data-testid="stChatMessage"] *, 
-        [data-testid="stChatMessage"] p, 
-        .stMarkdown div p,
-        [data-testid="stMarkdownContainer"] p {
+        [data-testid="stChatMessage"] *, [data-testid="stChatMessage"] p, 
+        .stMarkdown div p, [data-testid="stMarkdownContainer"] p {
             color: #0F172A !important;
-            font-size: 0.95rem !important;
-            line-height: 1.6 !important;
-        }
-
-        /* ✨ 메인 비주얼 배너 */
-        .title-section-container { 
-            padding: 24px 20px; 
-            border-radius: 20px; 
-            background: linear-gradient(135deg, #FF5252 0%, #FF7A45 100%) !important;
-            box-shadow: 0 8px 24px rgba(255, 82, 82, 0.15); 
-            margin-bottom: 20px; 
-            text-align: left; 
-            width: 100%;
-            box-sizing: border-box !important;
-        }
-        .title-text { 
-            color: #FFFFFF !important;
-            font-size: 1.5rem !important; 
-            font-weight: 900 !important; 
-            margin: 0 !important; 
-            padding: 0 !important;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        .subtitle-text { 
-            color: #FFFFFF !important;
-            font-size: 0.88rem !important; 
-            font-weight: 500 !important; 
-            margin-top: 8px !important; 
-            margin-bottom: 0 !important; 
-            line-height: 1.4 !important;
-        }
-
-        /* 💎 대시보드형 안내 카드 레이아웃 */
-        .premium-card { 
-            padding: 18px 16px; 
-            background: #FFFFFF !important;
-            border-radius: 18px; 
-            border: 1px solid #E2E8F0; 
-            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.03); 
-            margin-bottom: 20px; 
-            width: 100%;
-            box-sizing: border-box !important;
-        }
-        .card-title { 
-            font-size: 1.0rem !important; 
-            font-weight: 700 !important; 
-            color: #0F172A !important;
-            margin-bottom: 12px !important; 
-            display: flex; 
-            align-items: center; 
-            gap: 6px; 
-        }
-        .card-content { 
-            font-size: 0.88rem !important; 
-            color: #334155 !important;
-        }
-        
-        /* 📱 추천 질문 태그 칩 */
-        .chip-container {
-            margin-top: 14px;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-        }
-        .card-highlight { 
-            color: #E11D48 !important; 
-            font-weight: 700 !important; 
-            background: #FFF1F2 !important;
-            padding: 8px 14px;
-            border-radius: 30px;
-            font-size: 0.82rem !important;
-            border: 1px solid #FECDD3 !important;
+            font-size: 0.92rem !important;
+            line-height: 1.5 !important;
         }
 
         /* 🔍 근거 스니펫 박스 */
         .evidence-box {
             background-color: #F1F5F9 !important;
             border-left: 4px solid #EF4444 !important;
-            padding: 12px 14px !important;
+            padding: 10px 12px !important;
             color: #1E293B !important;
-            font-size: 0.85rem !important;
-        }
-
-        /* 🎯 [강력 수정] 하단 검은 바 차단을 위한 최상위 absolute 컨테이너 융합 */
-        div[data-testid="stBottom"],
-        div[data-testid="stBottomBlockContainer"],
-        div[data-testid="stBottomBlockContainer"] > div,
-        .stChatInputContainer {
-            background-color: #F8FAFC !important;
-            background: #F8FAFC !important;
-            box-shadow: none !important;
-            border: none !important;
-        }
-
-        /* 실제 글씨가 입력되는 텍스트 박스 영역을 PC 다크모드 사양에 상관없이 강제 제어 */
-        div[data-testid="stChatInput"] textarea,
-        .stChatInputContainer textarea,
-        div[data-testid="stChatInput"] [data-testid="stMarkdownContainer"] p {
-            background-color: #FFFFFF !important;
-            background: #FFFFFF !important;
-            color: #0F172A !important;
-            border: 1px solid #CBD5E1 !important;
-            border-radius: 14px !important;
-        }
-        
-        div[data-testid="stChatInput"] textarea::placeholder {
-            color: #94A3B8 !important;
+            font-size: 0.82rem !important;
         }
 
         .sidebar-custom-box {
@@ -190,16 +75,108 @@ st.markdown("""
             padding: 12px; 
         }
 
-        /* PC 화면 대응 너비 중앙 정렬 */
+        /* ==========================================
+           🖥️ 1. PC 버전에만 적용되는 레이아웃 구조 (화면 너비 1025px 이상)
+           ========================================== */
         @media (min-width: 1025px) {
-            .block-container { max-width: 800px !important; margin: 0 auto !important; padding-top: 4.5rem !important; }
-            .title-section-container { padding: 34px 36px; }
-            .title-text { font-size: 2.0rem !important; }
-            .premium-card { padding: 24px; }
+            .block-container { 
+                max-width: 800px !important; 
+                margin: 0 auto !important; 
+                padding-top: 4rem !important; 
+                padding-bottom: 9rem !important;
+            }
             
-            div[data-testid="stBottomBlockContainer"] {
+            /* 대시보드형 디자인 그대로 유지 */
+            .title-section-container { 
+                padding: 34px 36px; 
+                border-radius: 20px; 
+                background: linear-gradient(135deg, #FF5252 0%, #FF7A45 100%) !important;
+                margin-bottom: 20px; 
+            }
+            .title-text { color: #FFFFFF !important; font-size: 2.0rem !important; font-weight: 900 !important; }
+            .subtitle-text { color: #FFFFFF !important; font-size: 0.95rem !important; margin-top: 8px !important; }
+
+            .premium-card { 
+                padding: 24px; background: #FFFFFF !important; border-radius: 18px; 
+                border: 1px solid #E2E8F0; box-shadow: 0 4px 14px rgba(0, 0, 0, 0.03); margin-bottom: 20px; 
+            }
+            .card-title { font-size: 1.05rem !important; font-weight: 700 !important; color: #0F172A !important; margin-bottom: 12px !important; display: flex; align-items: center; gap: 6px; }
+            .card-content { font-size: 0.88rem !important; color: #334155 !important; }
+            .chip-container { margin-top: 14px; display: flex; flex-wrap: wrap; gap: 8px; }
+            .card-highlight { color: #E11D48 !important; font-weight: 700 !important; background: #FFF1F2 !important; padding: 8px 14px; border-radius: 30px; font-size: 0.82rem !important; border: 1px solid #FECDD3 !important; }
+
+            /* PC 다크모드 무력화: 바탕 및 입력 하단부를 연한 회색(#F8FAFC)으로 고정 */
+            div[data-testid="stBottom"],
+            div[data-testid="stBottomBlockContainer"],
+            div[data-testid="stBottomBlockContainer"] > div,
+            .stChatInputContainer {
+                background-color: #F8FAFC !important;
+                background: #F8FAFC !important;
+                box-shadow: none !important;
+                border: none !important;
                 max-width: 800px !important;
                 margin: 0 auto !important;
+            }
+            div[data-testid="stChatInput"] textarea, .stChatInputContainer textarea {
+                background-color: #FFFFFF !important;
+                color: #0F172A !important;
+                border: 1px solid #CBD5E1 !important;
+                border-radius: 14px !important;
+            }
+        }
+
+        /* ==========================================
+           📱 2. 모바일 버전에만 적용되는 초압축 스크롤 프리 레이아웃 (화면 너비 1024px 이하)
+           ========================================== */
+        @media (max-width: 1024px) {
+            /* 한 화면에 다 담기도록 메인 여백 및 높이 통제 */
+            .block-container { 
+                padding-top: 0.8rem !important; 
+                padding-bottom: 5.5rem !important; 
+                padding-left: 12px !important;
+                padding-right: 12px !important;
+            }
+
+            /* 거대한 비주얼 배너 -> 슬림한 한 줄 타이틀로 완전히 단순화 */
+            .title-section-container { 
+                background: transparent !important;
+                box-shadow: none !important;
+                padding: 4px 0px !important;
+                margin-bottom: 8px !important;
+                border-bottom: 2px solid #FF5252 !important;
+                border-radius: 0px !important;
+            }
+            .title-text { 
+                color: #0F172A !important; 
+                font-size: 1.15rem !important; 
+                font-weight: 900 !important;
+                text-shadow: none !important;
+            }
+            .subtitle-text { display: none !important; } /* 설명 문구 숨김 */
+
+            /* 공간을 크게 차지하던 추천 질문 카드 제거 */
+            .premium-card { 
+                display: none !important; 
+            }
+
+            /* 하단 고정바 영역을 극도로 얇게 축소하여 스크롤 발생을 차단 */
+            div[data-testid="stBottom"] {
+                padding-bottom: 6px !important;
+                background-color: #F8FAFC !important;
+            }
+            div[data-testid="stBottomBlockContainer"] {
+                padding: 0px 8px !important;
+                background-color: #F8FAFC !important;
+            }
+            
+            /* 입력창 자체 두께 줄이기 */
+            div[data-testid="stChatInput"] textarea, .stChatInputContainer textarea {
+                background-color: #FFFFFF !important;
+                color: #0F172A !important;
+                border: 1px solid #E2E8F0 !important;
+                border-radius: 10px !important;
+                padding: 8px 12px !important;
+                font-size: 0.88rem !important;
             }
         }
     </style>
@@ -356,7 +333,7 @@ with st.sidebar:
     """, unsafe_allow_html=True)
 
 # ==========================================
-# 4. 👑 메인 인터페이스 레이아웃
+# 4. 👑 메인 인터페이스 레이아웃 (HTML 클래스 매핑)
 # ==========================================
 st.markdown("""
     <div class="title-section-container">
