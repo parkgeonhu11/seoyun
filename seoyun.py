@@ -172,10 +172,14 @@ st.markdown("""
             line-height: 1.6;
         }
 
-        /* 🔘 🛑 하단 영역 검은색 배경 완전 제거 고정 */
+        /* 🔘 🛑 [최종 타격] PC 브라우저 검은색 바 완전 강제 소멸 스타일링 */
+        /* Streamlit 하단 고정 요소 내부의 백그라운드를 테마 분기 무관 연회색으로 강제 선언 */
         div[data-testid="stBottom"],
         div[data-testid="stBottomBlockContainer"],
-        .stChatInputContainer {
+        div[data-testid="stBottomBlockContainer"] *,
+        .stChatInputContainer,
+        div[style*="position: fixed"],
+        div[style*="position: fixed"] * {
             background-color: #F8FAFC !important;
             background: #F8FAFC !important;
             box-shadow: none !important;
@@ -189,6 +193,7 @@ st.markdown("""
             opacity: 1 !important;
             padding: 14px 0px !important;
             background-color: transparent !important;
+            background: transparent !important;
         }
 
         /* 실제 텍스트가 들어가는 박스 내부 스타일 (항상 밝은 흰색 유지하여 또렷하게 표시) */
