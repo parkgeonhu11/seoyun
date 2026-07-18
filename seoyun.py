@@ -172,21 +172,18 @@ st.markdown("""
             line-height: 1.6;
         }
 
-        /* 🔘 🛑 [최종 타격] PC 브라우저 검은색 바 완전 강제 소멸 스타일링 */
-        /* Streamlit 하단 고정 요소 내부의 백그라운드를 테마 분기 무관 연회색으로 강제 선언 */
+        /* 🔘 🛑 [구조 롤백 및 정밀 복구] 하단 프레임 영역 컬러 융합 */
         div[data-testid="stBottom"],
         div[data-testid="stBottomBlockContainer"],
-        div[data-testid="stBottomBlockContainer"] *,
-        .stChatInputContainer,
-        div[style*="position: fixed"],
-        div[style*="position: fixed"] * {
+        div[style*="position: fixed"] {
             background-color: #F8FAFC !important;
             background: #F8FAFC !important;
             box-shadow: none !important;
             border: none !important;
         }
 
-        /* 텍스트 입력창 자체 컴포넌트 강제 뷰 확보 설정 */
+        /* 텍스트 입력창 컨테이너 레이아웃 가시성 무조건 고정 */
+        .stChatInputContainer, 
         div[data-testid="stChatInput"] {
             display: flex !important;
             visibility: visible !important;
@@ -196,21 +193,25 @@ st.markdown("""
             background: transparent !important;
         }
 
-        /* 실제 텍스트가 들어가는 박스 내부 스타일 (항상 밝은 흰색 유지하여 또렷하게 표시) */
-        div[data-testid="stChatInput"] textarea {
+        /* 🎯 실제 글자가 적히는 하단 박스 영역을 흰색(#FFFFFF)으로 최우선 강제 지정 */
+        div[data-testid="stChatInput"] textarea,
+        .stChatInputContainer textarea {
             display: block !important;
             visibility: visible !important;
-            border-radius: 14px !important;
+            opacity: 1 !important;
+            background-color: #FFFFFF !important;
+            background: #FFFFFF !important;
+            color: #0F172A !important;
             border: 1px solid #CBD5E1 !important;
-            box-shadow: 0 4px 20px rgba(15, 23, 42, 0.05) !important;
+            border-radius: 14px !important;
+            box-shadow: 0 4px 20px rgba(15, 23, 42, 0.06) !important;
             font-size: 0.95rem !important;
             padding: 12px !important;
-            color: #0F172A !important;
-            background-color: #FFFFFF !important;
         }
         
         /* 미입력 상태 플레이스홀더(힌트문구) 색상 최적화 */
-        div[data-testid="stChatInput"] textarea::placeholder {
+        div[data-testid="stChatInput"] textarea::placeholder,
+        .stChatInputContainer textarea::placeholder {
             color: #94A3B8 !important;
             opacity: 1 !important;
         }
