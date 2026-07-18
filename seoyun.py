@@ -6,7 +6,7 @@ import csv
 import numpy as np
 
 # ==========================================
-# 1. 🌐 웹페이지 기본 구성 및 모바일 크로스 브라우징 레이아웃 정의
+# 1. 🌐 웹페이지 기본 구성 및 반응형 크로스 브라우징 정의
 # ==========================================
 st.set_page_config(
     page_title="서연중학교 AI 안내 센터",
@@ -24,65 +24,66 @@ except KeyError:
 
 client = OpenAI(api_key=MY_OPENAI_API_KEY)
 
-# 🎨 레이아웃 미세 조정 (프리미엄 UI/UX 컴포넌트 디자인 스타일 시트)
+# 🎨 스마트폰/아이패드/PC 전 기기 대응 반응형 스타일 시트
 st.markdown("""
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap');
 
-        /* 📱 모바일 기기별 글자 및 레이아웃 축소 원천 방지 */
+        /* 📱 모바일/태블릿 글자 및 너비 축소 방지 + 가로 스크롤 제거 */
         html, body, [data-testid="stAppViewContainer"], [data-testid="stHeader"] {
             max-width: 100vw !important;
             overflow-x: hidden !important;
             box-sizing: border-box !important;
             -webkit-text-size-adjust: none !important;
             text-size-adjust: none !important;
-            background-color: #F9FAFB !important;
+            background-color: #F8FAFC !important;
         }
         
-        /* ⚙️ 불필요한 툴바 및 메뉴 제거 */
+        /* ⚙️ 불필요한 기본 툴바 및 내부 데코레이션 제거 */
         [data-testid="stToolbar"], [data-testid="stDecoration"], #MainMenu, footer {
             display: none !important;
             visibility: hidden !important;
             height: 0 !important;
         }
 
+        /* 🧩 기본 메인 컨테이너 여백 최적화 (모든 기기 반응형 기본형) */
         .block-container {
             padding-top: 1rem !important;
-            padding-bottom: 3rem !important;
-            padding-left: 14px !important;
-            padding-right: 14px !important;
+            padding-bottom: 4rem !important;
+            padding-left: 4% !important;
+            padding-right: 4% !important;
             max-width: 100% !important;
             box-sizing: border-box !important;
         }
 
-        /* 전역 폰트 세팅 */
+        /* 전역 폰트 지정 */
         .stApp, .title-section-container, .premium-card {
             font-family: 'Noto Sans KR', sans-serif !important;
         }
 
-        /* ✨ 상단 메인 비주얼 배너 (모던 스쿨룩 그라데이션) */
+        /* ✨ 메인 비주얼 배너 (모든 해상도 유연 대응) */
         .title-section-container { 
             padding: 24px 20px; 
             border-radius: 20px; 
             background: linear-gradient(135deg, #FF6B6B 0%, #FF8E53 100%) !important;
-            box-shadow: 0 10px 25px rgba(255, 107, 107, 0.2); 
-            margin-bottom: 22px; 
+            box-shadow: 0 8px 20px rgba(255, 107, 107, 0.15); 
+            margin-bottom: 20px; 
             text-align: left; 
             width: 100%;
             box-sizing: border-box !important;
         }
         .title-text { 
             color: #FFFFFF !important;
-            font-size: 1.65rem !important; 
+            font-size: 1.5rem !important; 
             font-weight: 900 !important; 
             margin: 0; 
-            letter-spacing: -1px; 
-            line-height: 1.2;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            letter-spacing: -0.5px; 
+            line-height: 1.25;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.08);
         }
         .subtitle-text { 
-            color: rgba(255, 255, 255, 0.9) !important;
-            font-size: 0.9rem !important; 
+            color: rgba(255, 255, 255, 0.95) !important;
+            font-size: 0.85rem !important; 
             font-weight: 500 !important; 
             margin-top: 6px; 
             margin-bottom: 0; 
@@ -90,106 +91,113 @@ st.markdown("""
             line-height: 1.4;
         }
 
-        /* 💎 대시보드형 안내 카드 카드 레이아웃 */
+        /* 💎 대시보드형 안내 카드 레이아웃 */
         .premium-card { 
-            padding: 20px 18px; 
+            padding: 18px 16px; 
             background: #FFFFFF !important;
-            border-radius: 20px; 
-            border: 1px solid #E5E7EB; 
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03); 
-            margin-bottom: 22px; 
+            border-radius: 18px; 
+            border: 1px solid #E2E8F0; 
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.02); 
+            margin-bottom: 20px; 
             width: 100%;
             box-sizing: border-box !important;
         }
         .card-title { 
-            font-size: 1.05rem; 
+            font-size: 0.95rem; 
             font-weight: 700; 
-            color: #1F2937 !important;
+            color: #1E293B !important;
             margin-top: 0; 
-            margin-bottom: 14px; 
+            margin-bottom: 12px; 
             display: flex; 
             align-items: center; 
-            gap: 8px; 
+            gap: 6px; 
         }
         .card-content { 
-            font-size: 0.9rem; 
-            line-height: 1.6; 
-            color: #4B5563 !important;
+            font-size: 0.85rem; 
+            line-height: 1.5; 
+            color: #475569 !important;
             margin: 0; 
             word-break: keep-all;
         }
         
-        /* 📱 추천 질문 태그 칩 스타일 (클릭하고 싶게 만드는 배지화) */
+        /* 📱 추천 질문 태그 칩 레이아웃 (자동 줄바꿈 플렉스 박스 고도화) */
         .chip-container {
-            margin-top: 10px;
+            margin-top: 12px;
             display: flex;
             flex-wrap: wrap;
-            gap: 6px;
+            gap: 8px;
+            width: 100%;
         }
         .card-highlight { 
-            color: #FF5252 !important; 
+            color: #FF4D4D !important; 
             font-weight: 600; 
             background: #FFF5F5 !important;
             padding: 6px 14px;
             border-radius: 30px;
-            display: inline-block; 
-            font-size: 0.82rem;
-            border: 1px solid #FFE0E0;
-            transition: all 0.2s ease;
-            box-shadow: 0 2px 5px rgba(255, 82, 82, 0.05);
+            font-size: 0.8rem;
+            border: 1px solid #FFE3E3;
+            display: inline-block;
+            white-space: nowrap;
+            box-shadow: 0 1px 3px rgba(255, 77, 77, 0.03);
         }
 
-        /* 🔍 근거 스니펫 보기 좋게 커스텀 테두리화 */
+        /* 🔍 근거 스니펫 박스 */
         .evidence-box {
-            background-color: #F9FAFB !important;
+            background-color: #F8FAFC !important;
             border-left: 4px solid #FF6B6B !important;
-            padding: 8px 12px !important;
+            padding: 10px 14px !important;
             margin: 6px 0 !important;
-            border-radius: 4px;
-            font-size: 0.85rem !important;
-            color: #374151 !important;
+            border-radius: 6px;
+            font-size: 0.82rem !important;
+            color: #334155 !important;
+            line-height: 1.5;
         }
 
-        /* 🔘 버튼 스타일 최적화 */
-        div.stButton > button, div[data-testid="stSidebar"] button {
-            width: 100% !important;
-            padding: 10px 16px !important;
-            font-size: 0.95rem !important;
-            font-weight: 600 !important;
-            border-radius: 12px !important;
-            border: 1px solid #E5E7EB !important;
-            background: #FFFFFF !important;
-            box-sizing: border-box !important;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.02) !important;
-        }
-
-        /* 💬 채팅 입력창 높이 및 크기 제어 */
+        /* 🔘 입력창 스티키 하단바 및 컴포넌트 터치 최적화 */
         div[data-testid="stChatInput"] {
             padding: 0px !important;
             background-color: transparent !important;
         }
         div[data-testid="stChatInput"] textarea {
-            border-radius: 16px !important;
-            border: 1px solid #E5E7EB !important;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05) !important;
-            font-size: 0.95rem !important;
-            padding: 12px 14px !important;
+            border-radius: 14px !important;
+            border: 1px solid #E2E8F0 !important;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.06) !important;
+            font-size: 0.92rem !important;
+            padding: 12px !important;
         }
 
         .sidebar-custom-box {
             background: linear-gradient(135deg, #FFF5F5 0%, #FFEBEB 100%) !important; 
-            border-radius: 14px; 
-            padding: 14px; 
-            border: 1px solid #FFC7C7; 
+            border-radius: 12px; 
+            padding: 12px; 
+            border: 1px solid #FFD1D1; 
         }
 
-        /* 💻 데스크톱 환경 반응형 확장 레이아웃 조정 */
-        @media (min-width: 768px) {
-            .block-container { padding: 2.5rem 8rem !important; }
-            .title-section-container { padding: 32px 40px; text-align: center; justify-content: center; }
-            .title-text { font-size: 2.4rem !important; }
-            .subtitle-text { font-size: 1.05rem !important; margin-top: 10px;}
-            .premium-card { padding: 24px 28px; }
+        /* ==========================================
+           🎯 해상도별 정밀 브레이크포인트 대응 분기
+           ========================================== */
+        
+        /* 📱 1. 아이패드 / 미니 / 태블릿 해상도 (세로&가로 환경) */
+        @media (min-width: 600px) and (max-width: 1024px) {
+            .block-container { padding-left: 6% !important; padding-right: 6% !important; }
+            .title-section-container { padding: 28px 24px; }
+            .title-text { font-size: 1.8rem !important; }
+            .subtitle-text { font-size: 0.95rem !important; }
+            .premium-card { padding: 20px; }
+            .card-title { font-size: 1.05rem; }
+            .card-content { font-size: 0.9rem; }
+            .card-highlight { font-size: 0.85rem; padding: 7px 15px; }
+        }
+
+        /* 💻 2. 일반 PC 및 고해상도 모니터 환경 */
+        @media (min-width: 1025px) {
+            .block-container { max-width: 900px !important; margin: 0 auto !important; padding-top: 2rem !important; }
+            .title-section-container { padding: 36px 40px; text-align: center; }
+            .title-text { font-size: 2.2rem !important; }
+            .subtitle-text { font-size: 1.05rem !important; margin-top: 8px; }
+            .premium-card { padding: 24px; }
+            .card-title { font-size: 1.1rem; }
+            .card-content { font-size: 0.92rem; }
             .card-highlight { font-size: 0.88rem; padding: 8px 16px; }
         }
     </style>
@@ -358,7 +366,7 @@ st.markdown("""
 st.markdown("""
     <div class="premium-card">
         <div class="card-title">
-            <img src="https://img.icons8.com/fluency/48/sparkles.png" width="22" height="22"/>
+            <img src="https://img.icons8.com/fluency/48/sparkles.png" width="20" height="20"/>
             자주 묻는 질문 예시
         </div>
         <p class="card-content">
