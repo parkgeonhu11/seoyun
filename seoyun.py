@@ -24,7 +24,7 @@ except KeyError:
 
 client = OpenAI(api_key=MY_OPENAI_API_KEY)
 
-# 🎨 [오류 완전 수정] PC 다크모드 하단 검은색 바 현상 해결을 위한 미니멀 스타일 시트
+# 🎨 [최종 보정] PC 다크모드 무조건 차단 및 연회색/흰색 강제 고정 스타일
 st.markdown("""
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght=400;500;700;900&display=swap');
@@ -158,18 +158,21 @@ st.markdown("""
             font-size: 0.85rem !important;
         }
 
-        /* 🎯 [가장 중요] PC와 모바일 모두 하단 입력창 주변 바탕을 연한 회색(#F8FAFC)으로 고정 */
+        /* 🎯 [강력 수정] 하단 검은 바 차단을 위한 최상위 absolute 컨테이너 융합 */
         div[data-testid="stBottom"],
         div[data-testid="stBottomBlockContainer"],
-        div[data-testid="stBottomBlockContainer"] > div {
+        div[data-testid="stBottomBlockContainer"] > div,
+        .stChatInputContainer {
             background-color: #F8FAFC !important;
             background: #F8FAFC !important;
             box-shadow: none !important;
             border: none !important;
         }
 
-        /* 실제 텍스트 입력 칸 안쪽 스타일만 하얗게 따로 분리 */
-        div[data-testid="stChatInput"] textarea {
+        /* 실제 글씨가 입력되는 텍스트 박스 영역을 PC 다크모드 사양에 상관없이 강제 제어 */
+        div[data-testid="stChatInput"] textarea,
+        .stChatInputContainer textarea,
+        div[data-testid="stChatInput"] [data-testid="stMarkdownContainer"] p {
             background-color: #FFFFFF !important;
             background: #FFFFFF !important;
             color: #0F172A !important;
