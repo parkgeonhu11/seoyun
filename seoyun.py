@@ -27,7 +27,7 @@ client = OpenAI(api_key=MY_OPENAI_API_KEY)
 # 🎨 스마트폰/아이패드/PC 전 기기 가독성 완벽 보장 스타일 시트
 st.markdown("""
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght=400;500;700;900&display=swap');
 
         /* 📱 모바일/태블릿 글자 및 너비 축소 방지 + 가로 스크롤 제거 */
         html, body, [data-testid="stAppViewContainer"], [data-testid="stHeader"] {
@@ -46,10 +46,10 @@ st.markdown("""
             height: 0 !important;
         }
 
-        /* 🧩 기본 메인 컨테이너 여백 최적화 */
+        /* 🧩 기본 메인 컨테이너 여백 최적화 (상단 짤림 방지 보정) */
         .block-container {
-            padding-top: 1rem !important;
-            padding-bottom: 9rem !important; /* 하단 입력공간 확보를 위한 여백 */
+            padding-top: 3.5rem !important; /* 상단 헤더 영역 확보로 모바일 짤림 방지 */
+            padding-bottom: 9rem !important; 
             padding-left: 4% !important;
             padding-right: 4% !important;
             max-width: 100% !important;
@@ -67,6 +67,7 @@ st.markdown("""
             border: 1px solid #E2E8F0 !important;
             border-radius: 12px !important;
             margin-bottom: 10px !important;
+            box-shadow: 0 2px 8px rgba(15, 23, 42, 0.02) !important;
         }
         [data-testid="stChatMessage"] *, 
         [data-testid="stChatMessage"] p, 
@@ -81,7 +82,7 @@ st.markdown("""
             padding: 24px 20px; 
             border-radius: 20px; 
             background: linear-gradient(135deg, #FF5252 0%, #FF7A45 100%) !important;
-            box-shadow: 0 8px 24px rgba(255, 82, 82, 0.2); 
+            box-shadow: 0 8px 24px rgba(255, 82, 82, 0.15); 
             margin-bottom: 20px; 
             text-align: left; 
             width: 100%;
@@ -95,7 +96,7 @@ st.markdown("""
             padding: 0 !important;
             letter-spacing: -0.5px; 
             line-height: 1.3 !important;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.15);
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
         .subtitle-text { 
             color: #FFFFFF !important;
@@ -114,8 +115,8 @@ st.markdown("""
             padding: 18px 16px; 
             background: #FFFFFF !important;
             border-radius: 18px; 
-            border: 1px solid #CBD5E1; 
-            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.04); 
+            border: 1px solid #E2E8F0; 
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.03); 
             margin-bottom: 20px; 
             width: 100%;
             box-sizing: border-box !important;
@@ -171,8 +172,7 @@ st.markdown("""
             line-height: 1.6;
         }
 
-        /* 🔘 🛑 [하단 영역 검은색 배경 완전 투명화 + 입력란 가시성 보장 복구] */
-        /* 하단을 덮고 있던 어두운 고정형 레이아웃 오버레이 차단막의 배경색만 앱 본문 연회색(#F8FAFC)으로 통일 */
+        /* 🔘 🛑 하단 영역 검은색 배경 완전 제거 고정 */
         div[data-testid="stBottom"],
         div[data-testid="stBottomBlockContainer"],
         .stChatInputContainer {
@@ -197,7 +197,7 @@ st.markdown("""
             visibility: visible !important;
             border-radius: 14px !important;
             border: 1px solid #CBD5E1 !important;
-            box-shadow: 0 4px 20px rgba(15, 23, 42, 0.06) !important;
+            box-shadow: 0 4px 20px rgba(15, 23, 42, 0.05) !important;
             font-size: 0.95rem !important;
             padding: 12px !important;
             color: #0F172A !important;
@@ -218,28 +218,31 @@ st.markdown("""
         }
 
         /* ==========================================
-            🎯 해상도별 정밀 브레이크포인트 대응 분기
+            🎯 PC 및 패드 해상도별 정밀 그리드 튜닝 (애매한 여백 통합 보정)
            ========================================== */
         @media (min-width: 600px) and (max-width: 1024px) {
-            .block-container { padding-left: 6% !important; padding-right: 6% !important; }
+            .block-container { padding-left: 5% !important; padding-right: 5% !important; padding-top: 4rem !important; }
             .title-section-container { padding: 30px 24px; }
-            .title-text { font-size: 1.8rem !important; }
-            .subtitle-text { font-size: 0.98rem !important; }
-            .premium-card { padding: 22px; }
-            .card-title { font-size: 1.1rem !important; }
-            .card-content { font-size: 0.92rem !important; }
-            .card-highlight { font-size: 0.88rem !important; padding: 8px 16px; }
+            .title-text { font-size: 1.7rem !important; }
+            .subtitle-text { font-size: 0.95rem !important; }
         }
 
         @media (min-width: 1025px) {
-            .block-container { max-width: 900px !important; margin: 0 auto !important; padding-top: 2rem !important; }
-            .title-section-container { padding: 36px 40px; text-align: center; }
-            .title-text { font-size: 2.2rem !important; }
-            .subtitle-text { font-size: 1.05rem !important; margin-top: 10px; }
-            .premium-card { padding: 26px; }
-            .card-title { font-size: 1.15rem !important; }
+            /* PC 브라우저 중앙 정렬 및 여백 일치 튜닝 */
+            .block-container { max-width: 800px !important; margin: 0 auto !important; padding-top: 4.5rem !important; }
+            .title-section-container { padding: 34px 36px; text-align: left; }
+            .title-text { font-size: 2.0rem !important; }
+            .subtitle-text { font-size: 1.0rem !important; margin-top: 10px; }
+            .premium-card { padding: 24px; }
+            .card-title { font-size: 1.1rem !important; }
             .card-content { font-size: 0.95rem !important; }
-            .card-highlight { font-size: 0.9rem !important; padding: 8px 18px; }
+            .card-highlight { font-size: 0.88rem !important; padding: 8px 16px; }
+            
+            /* 하단 입력창 영역 정렬도 PC 전용 메인 박스 레이아웃과 정확히 맞춤 */
+            div[data-testid="stBottomBlockContainer"] {
+                max-width: 800px !important;
+                margin: 0 auto !important;
+            }
         }
     </style>
 """, unsafe_allow_html=True)
@@ -438,7 +441,6 @@ for msg in st.session_state.messages:
 # ==========================================
 # 5. 🤖 실시간 대화 추론 엔진
 # ==========================================
-# 🎯 [수정 완료] placeholder 속성에 요청하신 문구를 정확히 명시해 복구했습니다.
 if user_input := st.chat_input(placeholder="서연 chatbot에게 물어보세요..."):
     with st.chat_message("user"):
         st.write(user_input)
