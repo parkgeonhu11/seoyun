@@ -49,7 +49,7 @@ st.markdown("""
         /* 🧩 기본 메인 컨테이너 여백 최적화 (모든 기기 반응형 기본형) */
         .block-container {
             padding-top: 1rem !important;
-            padding-bottom: 4rem !important;
+            padding-bottom: 6rem !important; /* 하단 입력창 겹침 방지 여백 확대 */
             padding-left: 4% !important;
             padding-right: 4% !important;
             max-width: 100% !important;
@@ -59,6 +59,13 @@ st.markdown("""
         /* 전역 폰트 및 통합 가독성 컬러 지정 */
         .stApp, .title-section-container, .premium-card {
             font-family: 'Noto Sans KR', sans-serif !important;
+        }
+
+        /* 🔴 [버그 수정] 챗봇 메시지 글씨 안 보임 현상 해결 - 글자색 진한 먹색 고정 */
+        [data-testid="stChatMessage"] p, [data-testid="stChatMessage"] {
+            color: #0F172A !important;
+            font-size: 0.95rem !important;
+            line-height: 1.6 !important;
         }
 
         /* ✨ 메인 비주얼 배너 (어두운 배경색 상정 고대비 흰색 글씨 전용) */
@@ -156,15 +163,15 @@ st.markdown("""
             line-height: 1.6;
         }
 
-        /* 🔘 입력창 스티키 하단바 및 컴포넌트 터치 최적화 */
+        /* 🔘 [모바일 최적화] 입력창 스티키 하단바 고정 및 입력 컴포넌트 터치 최적화 */
         div[data-testid="stChatInput"] {
-            padding: 0px !important;
-            background-color: transparent !important;
+            padding: 8px 0px !important;
+            background-color: #F8FAFC !important;
         }
         div[data-testid="stChatInput"] textarea {
             border-radius: 14px !important;
             border: 1px solid #CBD5E1 !important;
-            box-shadow: 0 4px 16px rgba(0,0,0,0.06) !important;
+            box-shadow: 0 -4px 16px rgba(0,0,0,0.04) !important;
             font-size: 0.95rem !important;
             padding: 12px !important;
             color: #0F172A !important;
@@ -178,7 +185,7 @@ st.markdown("""
         }
 
         /* ==========================================
-           🎯 해상도별 정밀 브레이크포인트 대응 분기
+            🎯 해상도별 정밀 브레이크포인트 대응 분기
            ========================================== */
         
         /* 📱 1. 아이패드 / 미니 / 태블릿 해상도 (세로&가로 환경) */
